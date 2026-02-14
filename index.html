@@ -78,14 +78,27 @@
         function loadTesseract() {
             return new Promise((resolve, reject) => {
                 if (window.Tesseract) { resolve(); return; }
-                const s = document.createElement('script');
-                s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js';
-                s.onload = () => {
-                    if (window.Tesseract) resolve();
-                    else reject(new Error('Tesseract failed to load'));
-                };
-                s.onerror = () => reject(new Error('Failed to load Tesseract script'));
-                document.head.appendChild(s);
+                const cdnUrls = [
+                    'https://unpkg.com/tesseract.js@4.1.4/dist/tesseract.min.js',
+                    'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.4/tesseract.min.js',
+                    'https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js'
+                ];
+                let index = 0;
+                function tryNext() {
+                    if (index >= cdnUrls.length) {
+                        reject(new Error('Could not load OCR engine. Please disable your ad blocker for this site and try again.'));
+                        return;
+                    }
+                    const s = document.createElement('script');
+                    s.src = cdnUrls[index];
+                    s.onload = () => {
+                        if (window.Tesseract) resolve();
+                        else { index++; tryNext(); }
+                    };
+                    s.onerror = () => { index++; tryNext(); };
+                    document.head.appendChild(s);
+                }
+                tryNext();
             });
         }
     </script>
@@ -5401,8 +5414,13 @@
                 results.style.display = 'block';
 
             } catch (err) {
-                status.innerHTML = '❌ Error: ' + (err.message || 'Could not process image. Please try again with a clearer photo.');
                 console.error('Scan error:', err);
+                let errorMsg = err.message || 'Could not process image.';
+                if (errorMsg.includes('ad blocker') || errorMsg.includes('Could not load')) {
+                    status.innerHTML = '❌ <strong>Ad blocker is blocking the scanner.</strong><br><span style="font-size:13px;">Please disable your ad blocker (uBlock, AdBlock, etc.) for this site, then refresh the page and try again.</span>';
+                } else {
+                    status.innerHTML = '❌ Error: ' + errorMsg + '<br><span style="font-size:13px;">Please try again with a clearer photo. If the problem persists, try disabling your ad blocker.</span>';
+                }
             }
 
             btn.disabled = false;
