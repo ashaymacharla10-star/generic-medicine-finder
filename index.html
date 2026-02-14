@@ -5339,29 +5339,24 @@
                 const extractedText = text.trim();
                 console.log('OCR Extracted text:', extractedText);
 
-                // Extract words and try to match with medicine database
+                // Step 1: Match against our database
                 const words = extractedText.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 2);
-                const matches = [];
+                const dbMatches = [];
 
                 medicines.forEach(med => {
                     const brandWords = med.brand.toLowerCase().split(/\s+/);
                     const genericWords = med.generic.toLowerCase().split(/[\s+,]+/);
                     let score = 0;
-
                     words.forEach(w => {
-                        // Exact brand match
                         if (med.brand.toLowerCase() === w) score += 10;
-                        // Brand word match
                         brandWords.forEach(bw => {
                             if (bw === w) score += 5;
                             else if (bw.length > 3 && (bw.includes(w) || w.includes(bw))) score += 3;
                         });
-                        // Generic name match
                         genericWords.forEach(gw => {
                             if (gw === w) score += 4;
                             else if (gw.length > 3 && (gw.includes(w) || w.includes(gw))) score += 2;
                         });
-                        // Also check alternatives
                         if (med.alternatives) {
                             med.alternatives.forEach(alt => {
                                 const altName = alt.name.toLowerCase();
@@ -5370,47 +5365,91 @@
                             });
                         }
                     });
+                    if (score > 2) dbMatches.push({ med, score });
+                });
+                dbMatches.sort((a, b) => b.score - a.score);
+                const topDbMatches = dbMatches.slice(0, 10);
 
-                    if (score > 2) matches.push({ med, score });
+                // Step 2: Extract potential medicine names from OCR text
+                // Medicine names are typically capitalized words, often with numbers (like 500mg, 650, etc.)
+                const lines = extractedText.split('\n').filter(l => l.trim().length > 1);
+                const medNamePattern = /\b([A-Z][a-zA-Z]+(?:\s*(?:\d+|mg|ml|mcg|gm|tab|cap|inj|SR|XR|XT|MR|CR|Plus|Forte|DS))*)\b/g;
+                const commonWords = new Set(['the','and','for','with','this','that','from','your','have','are','was','not','but','been','will','date','name','age','patient','doctor','take','times','day','days','after','before','food','meal','morning','evening','night','tablet','tablets','capsule','capsules','syrup','injection','once','twice','daily','weeks','month','hospital','clinic','phone','address','sig','qty','refill','disp','diagnosis','prescription','medical','rx','dr','mr','mrs']);
+                const potentialMeds = [];
+                const seenMeds = new Set();
+
+                let match;
+                while ((match = medNamePattern.exec(extractedText)) !== null) {
+                    const name = match[1].trim();
+                    const nameLower = name.toLowerCase();
+                    if (name.length >= 3 && !commonWords.has(nameLower) && !seenMeds.has(nameLower)) {
+                        seenMeds.add(nameLower);
+                        potentialMeds.push(name);
+                    }
+                }
+
+                // Also try line-by-line detection for medicine-like entries
+                lines.forEach(line => {
+                    const trimmed = line.trim();
+                    // Lines that look like "1. MedicineName 500mg" or "Tab. MedicineName"
+                    const lineMatch = trimmed.match(/(?:^\d+[\.\)]\s*|^(?:Tab|Cap|Syp|Inj)\.?\s+)([A-Z][a-zA-Z0-9\s\-]+)/i);
+                    if (lineMatch) {
+                        const name = lineMatch[1].trim();
+                        const nameLower = name.toLowerCase();
+                        if (name.length >= 3 && !commonWords.has(nameLower) && !seenMeds.has(nameLower)) {
+                            seenMeds.add(nameLower);
+                            potentialMeds.splice(0, 0, name); // Add at beginning (higher priority)
+                        }
+                    }
                 });
 
-                matches.sort((a, b) => b.score - a.score);
-                const topMatches = matches.slice(0, 10);
+                // Build results HTML
+                let html = '<div class="scan-results">';
 
-                if (topMatches.length === 0) {
-                    results.innerHTML = `
-                        <div class="scan-results">
-                            <h4>No matches found</h4>
-                            <p style="font-size:14px;color:#888;margin-bottom:10px;">We could not find matching medicines. This could happen if:</p>
-                            <ul style="font-size:13px;color:#888;margin-left:20px;line-height:1.8;">
-                                <li>The prescription image is blurry or unclear</li>
-                                <li>The medicine is not yet in our database (235 medicines)</li>
-                                <li>The handwriting is difficult to read</li>
-                            </ul>
-                            <p style="font-size:13px;color:#667eea;margin-top:10px;"><strong>Tip:</strong> Try searching by medicine name manually using the search bar above.</p>
-                            <details style="margin-top:10px;">
-                                <summary style="cursor:pointer;font-size:13px;color:#888;">Show extracted text</summary>
-                                <p style="font-size:12px;background:#f5f5f5;padding:10px;border-radius:6px;margin-top:5px;white-space:pre-wrap;max-height:150px;overflow-y:auto;">${extractedText || 'No text could be extracted'}</p>
-                            </details>
-                        </div>`;
-                } else {
-                    results.innerHTML = `
-                        <div class="scan-results">
-                            <h4>🎉 Found ${topMatches.length} possible match${topMatches.length > 1 ? 'es' : ''}:</h4>
-                            ${topMatches.map(m => `
-                                <div class="scan-match" onclick="document.getElementById('scanModal').classList.remove('show');searchInput.value='${m.med.brand.replace(/'/g,"\\'")}';searchTerm='${m.med.brand.toLowerCase().replace(/'/g,"\\'")}';filterAndDisplay();">
-                                    <strong>${m.med.brand}</strong> (${m.med.generic})<br>
-                                    <small style="opacity:0.7;">${m.med.usage}</small>
-                                </div>
-                            `).join('')}
-                            <p style="font-size:12px;color:#ff6b6b;margin-top:10px;">⚠️ These are AI-detected matches. Always verify with your doctor before taking any medicine.</p>
-                            <details style="margin-top:10px;">
-                                <summary style="cursor:pointer;font-size:13px;color:#888;">Show extracted text</summary>
-                                <p style="font-size:12px;background:#f5f5f5;padding:10px;border-radius:6px;margin-top:5px;white-space:pre-wrap;max-height:150px;overflow-y:auto;">${extractedText}</p>
-                            </details>
+                if (topDbMatches.length > 0) {
+                    html += `<h4 style="color:#27ae60;">🎉 Found ${topDbMatches.length} match${topDbMatches.length > 1 ? 'es' : ''} in our database:</h4>`;
+                    html += topDbMatches.map(m => `
+                        <div class="scan-match" onclick="document.getElementById('scanModal').classList.remove('show');searchInput.value='${m.med.brand.replace(/'/g,"\\'")}';searchTerm='${m.med.brand.toLowerCase().replace(/'/g,"\\'")}';filterAndDisplay();">
+                            <strong>${m.med.brand}</strong> (${m.med.generic})<br>
+                            <small style="opacity:0.7;">${m.med.usage} | ${m.med.priceRange}</small>
                         </div>
-                    `;
+                    `).join('');
                 }
+
+                if (potentialMeds.length > 0) {
+                    html += `<h4 style="margin-top:15px;">💊 Medicines detected in prescription:</h4>
+                        <p style="font-size:13px;color:#888;margin-bottom:10px;">Click any medicine to search for generic alternatives on 1mg</p>`;
+                    html += potentialMeds.slice(0, 15).map(name => `
+                        <div class="scan-match" style="display:flex;justify-content:space-between;align-items:center;">
+                            <strong>${name}</strong>
+                            <div style="display:flex;gap:6px;">
+                                <a href="https://www.1mg.com/search/all?name=${encodeURIComponent(name)}" target="_blank" rel="noopener" style="background:#ee4036;color:white;padding:4px 10px;border-radius:12px;font-size:12px;text-decoration:none;font-weight:600;" onclick="event.stopPropagation();">1mg</a>
+                                <a href="https://pharmeasy.in/search/all?name=${encodeURIComponent(name)}" target="_blank" rel="noopener" style="background:#27ae60;color:white;padding:4px 10px;border-radius:12px;font-size:12px;text-decoration:none;font-weight:600;" onclick="event.stopPropagation();">PharmEasy</a>
+                                <a href="https://www.google.com/search?q=${encodeURIComponent(name + ' generic alternative india')}" target="_blank" rel="noopener" style="background:#4285f4;color:white;padding:4px 10px;border-radius:12px;font-size:12px;text-decoration:none;font-weight:600;" onclick="event.stopPropagation();">Google</a>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                if (topDbMatches.length === 0 && potentialMeds.length === 0) {
+                    html += `<h4>Could not detect medicine names</h4>
+                        <p style="font-size:14px;color:#888;margin-bottom:10px;">This could happen if:</p>
+                        <ul style="font-size:13px;color:#888;margin-left:20px;line-height:1.8;">
+                            <li>The prescription image is blurry or unclear</li>
+                            <li>The handwriting is difficult to read (printed prescriptions work best)</li>
+                            <li>The image is rotated or upside down</li>
+                        </ul>
+                        <p style="font-size:13px;color:#667eea;margin-top:10px;"><strong>Tip:</strong> Try searching by medicine name manually using the search bar.</p>`;
+                }
+
+                html += `<p style="font-size:12px;color:#ff6b6b;margin-top:12px;">⚠️ Always verify with your doctor before taking any medicine.</p>
+                    <details style="margin-top:10px;">
+                        <summary style="cursor:pointer;font-size:13px;color:#888;">📄 Show extracted text from prescription</summary>
+                        <p style="font-size:12px;background:#f5f5f5;padding:10px;border-radius:6px;margin-top:5px;white-space:pre-wrap;max-height:200px;overflow-y:auto;">${extractedText || 'No text could be extracted'}</p>
+                    </details>
+                </div>`;
+
+                results.innerHTML = html;
                 results.style.display = 'block';
 
             } catch (err) {
