@@ -1420,19 +1420,20 @@
     <div class="modal-overlay" id="reminderModal">
         <div class="modal-content">
             <button class="modal-close" onclick="document.getElementById('reminderModal').classList.remove('show')">&times;</button>
-            <h2>⏰ Set Medicine Reminder</h2>
-            <p style="margin-bottom:15px;color:#666;font-size:14px;">Get browser notifications to remind you about this medicine.</p>
+            <h2>⏰ Medicine Reminder</h2>
             <div id="reminderMedName" style="font-weight:bold;color:#667eea;margin-bottom:15px;font-size:18px;"></div>
-            <label style="display:block;margin-bottom:8px;font-weight:600;">Reminder Time:</label>
+            <div id="remindersList" style="margin-bottom:20px;"></div>
+            <hr style="border:none;border-top:1px solid #eee;margin-bottom:20px;">
+            <p style="margin-bottom:12px;color:#666;font-size:14px;font-weight:600;">➕ Add New Reminder:</p>
+            <label style="display:block;margin-bottom:8px;font-weight:600;font-size:14px;">Reminder Time:</label>
             <input type="time" id="reminderTime" value="09:00" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:15px;">
-            <label style="display:block;margin-bottom:8px;font-weight:600;">Repeat:</label>
+            <label style="display:block;margin-bottom:8px;font-weight:600;font-size:14px;">Repeat:</label>
             <select id="reminderRepeat" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:20px;">
                 <option value="daily">Daily</option>
                 <option value="twice">Twice a day (9AM & 9PM)</option>
                 <option value="thrice">Three times a day (8AM, 2PM, 8PM)</option>
             </select>
             <button class="modal-submit" onclick="saveReminder()">Set Reminder</button>
-            <div id="remindersList" style="margin-top:20px;"></div>
         </div>
     </div>
 
@@ -4829,7 +4830,7 @@
                         <span>Was this helpful?</span>
                         <button class="feedback-btn ${fb.voted === 'up' ? 'voted' : ''}" onclick="voteFeedback('${med.brand.replace(/'/g, "\\'")}', 'up')">👍 ${fb.up}</button>
                         <button class="feedback-btn ${fb.voted === 'down' ? 'voted' : ''}" onclick="voteFeedback('${med.brand.replace(/'/g, "\\'")}', 'down')">👎 ${fb.down}</button>
-                        <button class="reminder-btn" onclick="openReminder('${med.brand.replace(/'/g, "\\'")}')">⏰ Reminder</button>
+                        <button class="reminder-btn ${reminders.some(r => r.medicine === med.brand) ? 'active' : ''}" onclick="openReminder('${med.brand.replace(/'/g, "\\'")}')">⏰ ${reminders.some(r => r.medicine === med.brand) ? 'Active' : 'Reminder'}</button>
                     </div>
                 </div>
             `}).join('');
@@ -5139,6 +5140,7 @@
                         localStorage.setItem('medReminders', JSON.stringify(reminders));
                         scheduleReminder(reminder);
                         showExistingReminders();
+                        filterAndDisplay(); // refresh cards to show "Active" state
                         alert(`Reminder set for ${currentReminderMed} at ${time}!`);
                     } else {
                         alert('Please allow notifications to set reminders.');
@@ -5153,20 +5155,24 @@
             reminders = reminders.filter(r => r.id !== id);
             localStorage.setItem('medReminders', JSON.stringify(reminders));
             showExistingReminders();
+            filterAndDisplay(); // refresh cards to update button state
         }
 
         function showExistingReminders() {
             const container = document.getElementById('remindersList');
             const medReminders = reminders.filter(r => r.medicine === currentReminderMed);
             if (medReminders.length === 0) {
-                container.innerHTML = '<p style="color:#999;font-size:13px;">No reminders set for this medicine.</p>';
+                container.innerHTML = '<p style="color:#999;font-size:14px;">No active reminders for this medicine.</p>';
                 return;
             }
-            container.innerHTML = '<h4 style="margin-bottom:10px;">Active Reminders:</h4>' +
+            container.innerHTML = '<h4 style="margin-bottom:10px;color:#27ae60;">✅ Active Reminders (' + medReminders.length + '):</h4>' +
                 medReminders.map(r => `
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:#f0f4ff;border-radius:6px;margin-bottom:6px;">
-                        <span>⏰ ${r.time} - ${r.repeat}</span>
-                        <button onclick="deleteReminder(${r.id})" style="background:#ff4444;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;">Remove</button>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:#f0f4ff;border-radius:8px;margin-bottom:8px;border-left:4px solid #667eea;">
+                        <div>
+                            <strong style="font-size:15px;">⏰ ${r.time}</strong>
+                            <span style="color:#888;font-size:13px;margin-left:8px;">(${r.repeat})</span>
+                        </div>
+                        <button onclick="deleteReminder(${r.id})" style="background:#ff4444;color:white;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">✕ Remove</button>
                     </div>
                 `).join('');
         }
