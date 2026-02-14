@@ -357,6 +357,232 @@
             color: #664d03;
         }
 
+        /* Sort & Filter Bar */
+        .sort-filter-bar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .sort-filter-bar label {
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .sort-select {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .sort-select:focus {
+            border-color: #667eea;
+        }
+
+        .results-count {
+            color: white;
+            font-weight: 600;
+            margin-left: auto;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        /* WhatsApp Share Button */
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            justify-content: center;
+        }
+
+        .btn-whatsapp:hover {
+            background: #1da851;
+            transform: scale(1.05);
+        }
+
+        /* Savings Calculator */
+        .savings-box {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+            color: white;
+        }
+
+        .savings-amount {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .savings-label {
+            font-size: 11px;
+            opacity: 0.9;
+            margin-top: 3px;
+        }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dark-mode-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body.dark-mode header,
+        body.dark-mode .search-section,
+        body.dark-mode .medicine-card,
+        body.dark-mode .no-results {
+            background: #1e1e2f;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode h1 { color: #8b9cf7; }
+        body.dark-mode .tagline { color: #aaa; }
+        body.dark-mode .brand-name { color: #e0e0e0; }
+        body.dark-mode .usage { color: #aaa; }
+        body.dark-mode .alternatives-title { color: #e0e0e0; }
+        body.dark-mode .alt-name { color: #e0e0e0; }
+
+        body.dark-mode .generic-name {
+            background: #2a2a4a;
+            color: #8b9cf7;
+        }
+
+        body.dark-mode .alternative-item {
+            background: #2a2a3f;
+        }
+
+        body.dark-mode #searchInput {
+            background: #2a2a3f;
+            color: #e0e0e0;
+            border-color: #444;
+        }
+
+        body.dark-mode .category-btn {
+            background: #2a2a3f;
+            color: #8b9cf7;
+            border-color: #8b9cf7;
+        }
+
+        body.dark-mode .category-btn.active,
+        body.dark-mode .category-btn:hover {
+            background: #8b9cf7;
+            color: #1a1a2e;
+        }
+
+        body.dark-mode .info-banner {
+            background: #2a2a3f;
+            border-color: #ffc107;
+            color: #ffc107;
+        }
+
+        body.dark-mode .info-banner strong { color: #ffd54f; }
+
+        body.dark-mode .price-range {
+            background: #1a3a2a;
+            color: #4caf50;
+        }
+
+        body.dark-mode .sort-select {
+            background: #2a2a3f;
+            color: #e0e0e0;
+            border-color: #444;
+        }
+
+        body.dark-mode .dark-mode-toggle {
+            background: #2a2a3f;
+            color: #ffd54f;
+        }
+
+        body.dark-mode .category-tag {
+            background: #8b9cf7;
+        }
+
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-to-top:hover {
+            background: #5568d3;
+            transform: scale(1.1);
+        }
+
+        .back-to-top.visible {
+            display: flex;
+        }
+
+        /* Card action buttons row */
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .card-actions .pharmacy-btn,
+        .card-actions .btn-whatsapp {
+            flex: 1;
+            font-size: 12px;
+            padding: 10px 8px;
+        }
+
         @media (max-width: 768px) {
             h1 {
                 font-size: 1.8em;
@@ -372,6 +598,25 @@
 
             .search-box {
                 flex-direction: column;
+            }
+
+            .sort-filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .results-count {
+                margin-left: 0;
+                text-align: center;
+            }
+
+            .card-actions {
+                flex-wrap: wrap;
+            }
+
+            .card-actions .pharmacy-btn,
+            .card-actions .btn-whatsapp {
+                flex: 1 1 45%;
             }
         }
 
@@ -389,6 +634,12 @@
     </style>
 </head>
 <body>
+    <!-- Dark Mode Toggle -->
+    <button class="dark-mode-toggle" id="darkModeToggle" title="Toggle Dark Mode">🌙</button>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" title="Back to Top">⬆</button>
+
     <div class="container">
         <header>
             <h1>💊 Generic Medicine Finder</h1>
@@ -403,7 +654,7 @@
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="Search 235+ medicines by brand name, generic name, or usage...">
             </div>
-            
+
             <div class="category-filters">
                 <button class="category-btn active" data-category="all">All Medicines</button>
                 <button class="category-btn" data-category="fever-pain">Fever & Pain</button>
@@ -419,6 +670,18 @@
                 <button class="category-btn" data-category="heart">Heart</button>
                 <button class="category-btn" data-category="vitamins">Vitamins</button>
             </div>
+        </div>
+
+        <!-- Sort & Filter Bar -->
+        <div class="sort-filter-bar">
+            <label>Sort by:</label>
+            <select class="sort-select" id="sortSelect">
+                <option value="default">Default</option>
+                <option value="a-z">Name (A-Z)</option>
+                <option value="z-a">Name (Z-A)</option>
+                <option value="category">Category</option>
+            </select>
+            <span class="results-count" id="resultsCount">Showing 235 medicines</span>
         </div>
 
         <div class="results-section" id="resultsSection">
@@ -3484,13 +3747,24 @@
         const searchInput = document.getElementById('searchInput');
         const resultsSection = document.getElementById('resultsSection');
         const categoryButtons = document.querySelectorAll('.category-btn');
+        const sortSelect = document.getElementById('sortSelect');
+        const resultsCount = document.getElementById('resultsCount');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const backToTop = document.getElementById('backToTop');
 
         // State
         let currentCategory = 'all';
         let searchTerm = '';
+        let currentSort = 'default';
 
         // Initialize
-        displayMedicines(medicines);
+        filterAndDisplay();
+
+        // Load dark mode preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.textContent = '☀️';
+        }
 
         // Event Listeners
         searchInput.addEventListener('input', (e) => {
@@ -3507,6 +3781,53 @@
             });
         });
 
+        sortSelect.addEventListener('change', (e) => {
+            currentSort = e.target.value;
+            filterAndDisplay();
+        });
+
+        // Dark Mode Toggle
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            darkModeToggle.textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('darkMode', isDark);
+        });
+
+        // Back to Top
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 500) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Helper: Extract min price number from price string
+        function getMinPrice(priceStr) {
+            const match = priceStr.match(/₹([\d,]+)/);
+            return match ? parseInt(match[1].replace(',', '')) : 0;
+        }
+
+        // Helper: Calculate savings
+        function calculateSavings(med) {
+            const brandMin = getMinPrice(med.priceRange);
+            if (med.alternatives.length > 0) {
+                const genericMin = getMinPrice(med.alternatives[0].price);
+                if (brandMin > 0 && genericMin > 0) {
+                    const savingsPerStrip = brandMin - genericMin;
+                    const savingsPerYear = savingsPerStrip * 12;
+                    const savingsPercent = Math.round((savingsPerStrip / brandMin) * 100);
+                    return { perStrip: savingsPerStrip, perYear: savingsPerYear, percent: savingsPercent };
+                }
+            }
+            return { perStrip: 0, perYear: 0, percent: 0 };
+        }
+
         // Functions
         function filterAndDisplay() {
             let filtered = medicines;
@@ -3518,12 +3839,25 @@
 
             // Filter by search
             if (searchTerm) {
-                filtered = filtered.filter(med => 
+                filtered = filtered.filter(med =>
                     med.brand.toLowerCase().includes(searchTerm) ||
                     med.generic.toLowerCase().includes(searchTerm) ||
-                    med.usage.toLowerCase().includes(searchTerm)
+                    med.usage.toLowerCase().includes(searchTerm) ||
+                    med.alternatives.some(alt => alt.name.toLowerCase().includes(searchTerm))
                 );
             }
+
+            // Sort
+            if (currentSort === 'a-z') {
+                filtered.sort((a, b) => a.brand.localeCompare(b.brand));
+            } else if (currentSort === 'z-a') {
+                filtered.sort((a, b) => b.brand.localeCompare(a.brand));
+            } else if (currentSort === 'category') {
+                filtered.sort((a, b) => a.category.localeCompare(b.category));
+            }
+
+            // Update count
+            resultsCount.textContent = `Showing ${filtered.length} medicine${filtered.length !== 1 ? 's' : ''}`;
 
             displayMedicines(filtered);
         }
@@ -3534,14 +3868,31 @@
                 return;
             }
 
-            resultsSection.innerHTML = medicineList.map(med => `
+            resultsSection.innerHTML = medicineList.map(med => {
+                const savings = calculateSavings(med);
+                const whatsappText = encodeURIComponent(
+                    `💊 *${med.brand}* (${med.generic})\n` +
+                    `💰 Brand Price: ${med.priceRange}\n` +
+                    `✅ Cheapest Generic: ${med.alternatives[0]?.name} at ${med.alternatives[0]?.price}\n` +
+                    `${savings.percent > 0 ? `🎉 Save up to ${savings.percent}%!\n` : ''}` +
+                    `\n🔗 Find more alternatives at: https://generic-med.org`
+                );
+
+                return `
                 <div class="medicine-card">
                     <div class="category-tag">${getCategoryName(med.category)}</div>
                     <div class="brand-name">${med.brand}</div>
                     <div class="generic-name">Generic: ${med.generic}</div>
                     <div class="usage">${med.usage}</div>
                     <div class="price-range">Typical Cost: ${med.priceRange}</div>
-                    
+
+                    ${savings.percent > 0 ? `
+                    <div class="savings-box">
+                        <div class="savings-amount">Save up to ${savings.percent}% | ₹${savings.perYear}/year</div>
+                        <div class="savings-label">💡 Switch to generic & save ₹${savings.perStrip} per strip (₹${savings.perYear} per year)</div>
+                    </div>
+                    ` : ''}
+
                     ${med.nppaPrice ? `
                     <div class="nppa-price-box">
                         <div class="nppa-label">🏛️ NPPA Govt. Ceiling Price</div>
@@ -3549,7 +3900,7 @@
                         <div class="nppa-verified">✓ ${med.nppaNote || 'Official Maximum Retail Price'}</div>
                     </div>
                     ` : ''}
-                    
+
                     <div class="alternatives-section">
                         <div class="alternatives-title">💰 Cheaper Alternatives:</div>
                         ${med.alternatives.map(alt => `
@@ -3560,19 +3911,22 @@
                         `).join('')}
                     </div>
 
-                    <div class="pharmacy-links">
+                    <div class="card-actions">
                         <a href="https://www.1mg.com/search/all?name=${encodeURIComponent(med.generic)}" target="_blank" class="pharmacy-btn btn-1mg">
-                            Check Price on 1mg
+                            1mg
                         </a>
                         <a href="https://www.apollopharmacy.in/search-medicines/${encodeURIComponent(med.generic.toLowerCase().replace(/ /g, '-'))}" target="_blank" class="pharmacy-btn btn-netmeds">
-                            Check Price on Apollo
+                            Apollo
                         </a>
                         <a href="https://pharmeasy.in/search/all?name=${encodeURIComponent(med.generic)}" target="_blank" class="pharmacy-btn btn-pharmeasy">
-                            Check Price on PharmEasy
+                            PharmEasy
+                        </a>
+                        <a href="https://wa.me/?text=${whatsappText}" target="_blank" class="btn-whatsapp">
+                            📱 Share
                         </a>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function getCategoryName(category) {
