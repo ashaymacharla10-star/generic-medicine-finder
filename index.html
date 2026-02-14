@@ -64,6 +64,28 @@
         }
     }
     </script>
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="GenericMed">
+
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <!-- Tesseract.js for OCR (loaded on demand) -->
+    <script>
+        function loadTesseract() {
+            return new Promise((resolve, reject) => {
+                if (window.Tesseract) { resolve(); return; }
+                const s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+                s.onload = resolve;
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
+        }
+    </script>
     <style>
         * {
             margin: 0;
@@ -76,6 +98,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            font-size: 16px;
         }
 
         .container {
@@ -230,6 +253,24 @@
             color: #333;
         }
 
+        .alt-link {
+            text-decoration: none;
+            color: #2563eb;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 1px dashed #2563eb;
+            padding-bottom: 1px;
+        }
+
+        .alt-link:hover {
+            color: #1d4ed8;
+            border-bottom: 1px solid #1d4ed8;
+            background: rgba(37, 99, 235, 0.05);
+            border-radius: 3px;
+            padding: 2px 4px;
+            margin: -2px -4px;
+        }
+
         .alt-price {
             color: #27ae60;
             font-weight: bold;
@@ -256,7 +297,7 @@
         }
 
         .nppa-label {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -265,15 +306,15 @@
         }
 
         .nppa-price {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
             margin-top: 3px;
         }
 
         .nppa-verified {
-            font-size: 10px;
+            font-size: 12px;
             margin-top: 5px;
-            opacity: 0.8;
+            opacity: 0.85;
         }
 
         .pharmacy-links {
@@ -435,7 +476,7 @@
         }
 
         .savings-label {
-            font-size: 11px;
+            font-size: 13px;
             opacity: 0.9;
             margin-top: 3px;
         }
@@ -483,6 +524,8 @@
         body.dark-mode .usage { color: #aaa; }
         body.dark-mode .alternatives-title { color: #e0e0e0; }
         body.dark-mode .alt-name { color: #e0e0e0; }
+        body.dark-mode .alt-link { color: #60a5fa; border-bottom-color: #60a5fa; }
+        body.dark-mode .alt-link:hover { color: #93bbfd; border-bottom-color: #93bbfd; background: rgba(96, 165, 250, 0.1); }
 
         body.dark-mode .generic-name {
             background: #2a2a4a;
@@ -574,14 +617,561 @@
             display: flex;
             gap: 8px;
             margin-top: 10px;
+            flex-wrap: wrap;
         }
 
         .card-actions .pharmacy-btn,
         .card-actions .btn-whatsapp {
             flex: 1;
-            font-size: 12px;
+            font-size: 14px;
             padding: 10px 8px;
+            min-width: 70px;
         }
+
+        /* More Pharmacies expandable */
+        .more-pharmacies-toggle {
+            width: 100%;
+            padding: 8px;
+            background: #f0f4ff;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+            transition: all 0.3s;
+            margin-top: 4px;
+        }
+        .more-pharmacies-toggle:hover {
+            background: #667eea;
+            color: white;
+            border-style: solid;
+        }
+        body.dark-mode .more-pharmacies-toggle {
+            background: #2a2a4a;
+            border-color: #8b9cf7;
+            color: #8b9cf7;
+        }
+        body.dark-mode .more-pharmacies-toggle:hover {
+            background: #8b9cf7;
+            color: #1a1a2e;
+        }
+        .extra-pharmacies {
+            display: none;
+            gap: 8px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+        .extra-pharmacies.show {
+            display: flex;
+        }
+        .extra-pharmacies .pharmacy-btn {
+            flex: 1 1 30%;
+            font-size: 13px;
+            padding: 10px 8px;
+            min-width: 80px;
+        }
+
+        .btn-netmeds-actual { background: #24AEB1; color: white; }
+        .btn-netmeds-actual:hover { background: #1d9396; transform: scale(1.05); }
+        .btn-medplus { background: #E53E3E; color: white; }
+        .btn-medplus:hover { background: #C53030; transform: scale(1.05); }
+        .btn-flipkart { background: #2874F0; color: white; }
+        .btn-flipkart:hover { background: #1a5dc8; transform: scale(1.05); }
+        .btn-amazon { background: #FF9900; color: white; }
+        .btn-amazon:hover { background: #e68a00; transform: scale(1.05); }
+        .btn-truemeds { background: #00B4D8; color: white; }
+        .btn-truemeds:hover { background: #0096b4; transform: scale(1.05); }
+        .btn-janaushadhi { background: #2E7D32; color: white; }
+        .btn-janaushadhi:hover { background: #1B5E20; transform: scale(1.05); }
+
+        /* Bookmark Button */
+        .bookmark-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            opacity: 0.4;
+            transition: all 0.3s;
+            z-index: 2;
+        }
+        .bookmark-btn:hover { opacity: 0.8; transform: scale(1.2); }
+        .bookmark-btn.bookmarked { opacity: 1; }
+        .medicine-card { position: relative; }
+
+        /* Feedback */
+        .feedback-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: #888;
+        }
+        body.dark-mode .feedback-row { border-top-color: #333; color: #777; }
+        .feedback-btn {
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            padding: 6px 14px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .feedback-btn:hover { background: #f0f4ff; border-color: #667eea; }
+        body.dark-mode .feedback-btn { border-color: #444; color: #ccc; }
+        body.dark-mode .feedback-btn:hover { background: #2a2a4a; border-color: #8b9cf7; }
+        .feedback-btn.voted { background: #667eea; color: white; border-color: #667eea; }
+        body.dark-mode .feedback-btn.voted { background: #8b9cf7; color: #1a1a2e; }
+        .feedback-count { font-size: 13px; color: #aaa; }
+
+        /* Voice Search */
+        .voice-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+        .voice-btn:hover { background: #5568d3; }
+        .voice-btn.listening {
+            background: #ff4444;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Bookmark filter toggle */
+        .bookmark-filter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .bookmark-filter-btn {
+            padding: 8px 15px;
+            border: 2px solid #ffc107;
+            background: transparent;
+            color: #ffc107;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .bookmark-filter-btn:hover,
+        .bookmark-filter-btn.active {
+            background: #ffc107;
+            color: #333;
+        }
+        #requestMedBtn:hover {
+            background: #667eea !important;
+            color: white !important;
+        }
+
+        /* Request Medicine Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        body.dark-mode .modal-content { background: #1e1e2f; color: #e0e0e0; }
+        .modal-close {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        .modal-close:hover { color: #333; }
+        body.dark-mode .modal-close:hover { color: #fff; }
+        .modal-content h2 { color: #667eea; margin-bottom: 20px; }
+        body.dark-mode .modal-content h2 { color: #8b9cf7; }
+        .modal-content input,
+        .modal-content textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            font-family: inherit;
+        }
+        body.dark-mode .modal-content input,
+        body.dark-mode .modal-content textarea {
+            background: #2a2a3f; color: #e0e0e0; border-color: #444;
+        }
+        .modal-content textarea { min-height: 100px; resize: vertical; }
+        .modal-submit {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        .modal-submit:hover { background: #5568d3; }
+        .modal-success {
+            text-align: center;
+            color: #27ae60;
+            font-weight: 600;
+            display: none;
+        }
+
+        /* Overpay Counter */
+        .overpay-counter {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(255,107,107,0.3);
+        }
+        .overpay-counter .counter-label {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .overpay-counter .counter-value {
+            font-size: 2.2em;
+            font-weight: 800;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .overpay-counter .counter-sub {
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 5px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        /* Comparison Tool */
+        .compare-checkbox {
+            position: absolute;
+            top: 12px;
+            right: 45px;
+            background: none;
+            border: 2px solid #667eea;
+            width: 24px;
+            height: 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            z-index: 2;
+        }
+        .compare-checkbox:hover { background: rgba(102,126,234,0.1); }
+        .compare-checkbox.selected { background: #667eea; color: white; }
+        body.dark-mode .compare-checkbox { border-color: #8b9cf7; }
+        body.dark-mode .compare-checkbox.selected { background: #8b9cf7; color: #1a1a2e; }
+
+        .compare-bar {
+            position: fixed;
+            bottom: 0; left: 0;
+            width: 100%;
+            background: #667eea;
+            color: white;
+            padding: 15px 25px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1500;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
+        }
+        .compare-bar.show { display: flex; }
+        .compare-bar button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .compare-bar button:hover { transform: scale(1.05); }
+
+        .compare-modal-content {
+            max-width: 900px;
+            width: 95%;
+        }
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .compare-table th, .compare-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        .compare-table th {
+            background: #f0f4ff;
+            color: #667eea;
+            font-weight: 700;
+        }
+        body.dark-mode .compare-table th { background: #2a2a4a; color: #8b9cf7; }
+        body.dark-mode .compare-table td { border-bottom-color: #333; }
+
+        /* QR Code */
+        .btn-qr {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            justify-content: center;
+        }
+        .btn-qr:hover { background: #555; transform: scale(1.05); }
+        .qr-modal-body {
+            text-align: center;
+            padding: 20px;
+        }
+        .qr-modal-body canvas, .qr-modal-body img {
+            margin: 15px auto;
+            display: block;
+        }
+        .qr-med-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        body.dark-mode .qr-med-name { color: #8b9cf7; }
+
+        /* Medicine Reminder */
+        .reminder-btn {
+            background: none;
+            border: 1px solid #667eea;
+            color: #667eea;
+            padding: 6px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .reminder-btn:hover { background: #667eea; color: white; }
+        body.dark-mode .reminder-btn { border-color: #8b9cf7; color: #8b9cf7; }
+        body.dark-mode .reminder-btn:hover { background: #8b9cf7; color: #1a1a2e; }
+        .reminder-btn.active { background: #667eea; color: white; }
+        body.dark-mode .reminder-btn.active { background: #8b9cf7; color: #1a1a2e; }
+
+        /* Hindi Toggle */
+        .lang-toggle {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 8px 14px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        .lang-toggle:hover { background: #667eea; color: white; }
+        body.dark-mode .lang-toggle {
+            background: #2a2a3f; border-color: #8b9cf7; color: #8b9cf7;
+        }
+        body.dark-mode .lang-toggle:hover { background: #8b9cf7; color: #1a1a2e; }
+
+        /* Family Cabinet */
+        .cabinet-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            z-index: 1000;
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            box-shadow: 0 3px 15px rgba(102,126,234,0.4);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cabinet-btn:hover { transform: scale(1.1); background: #5568d3; }
+        .cabinet-btn .badge {
+            position: absolute;
+            top: -5px; right: -5px;
+            background: #ff4444;
+            color: white;
+            font-size: 11px;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .cabinet-panel {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 380px;
+            max-width: 90vw;
+            height: 100vh;
+            background: white;
+            z-index: 2500;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.2);
+            transition: right 0.3s;
+            overflow-y: auto;
+            padding: 25px;
+        }
+        .cabinet-panel.open { right: 0; }
+        body.dark-mode .cabinet-panel { background: #1e1e2f; color: #e0e0e0; }
+        .cabinet-panel h2 { color: #667eea; margin-bottom: 15px; }
+        body.dark-mode .cabinet-panel h2 { color: #8b9cf7; }
+        .cabinet-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2400;
+        }
+        .cabinet-overlay.show { display: block; }
+        .member-card {
+            background: #f0f4ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+        body.dark-mode .member-card { background: #2a2a4a; }
+        .member-card h4 { color: #667eea; margin-bottom: 8px; }
+        body.dark-mode .member-card h4 { color: #8b9cf7; }
+        .member-med {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-size: 14px;
+        }
+        .member-med:last-child { border-bottom: none; }
+        .add-member-form {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .add-member-form input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        body.dark-mode .add-member-form input { background: #2a2a3f; color: #e0e0e0; border-color: #444; }
+        .add-member-form button {
+            padding: 8px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .remove-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        /* Prescription Scanner */
+        .scan-btn {
+            padding: 10px 18px;
+            border: 2px solid #ff6b6b;
+            background: transparent;
+            color: #ff6b6b;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .scan-btn:hover { background: #ff6b6b; color: white; }
+        .scan-results {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f4ff;
+            border-radius: 10px;
+        }
+        body.dark-mode .scan-results { background: #2a2a4a; }
+        .scan-results h4 { color: #667eea; margin-bottom: 10px; }
+        body.dark-mode .scan-results h4 { color: #8b9cf7; }
+        .scan-match {
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .scan-match:hover { background: #667eea; color: white; }
+        body.dark-mode .scan-match { background: #1e1e2f; }
+        body.dark-mode .scan-match:hover { background: #8b9cf7; color: #1a1a2e; }
 
         @media (max-width: 768px) {
             h1 {
@@ -618,6 +1208,24 @@
             .card-actions .btn-whatsapp {
                 flex: 1 1 45%;
             }
+
+            .extra-pharmacies .pharmacy-btn {
+                flex: 1 1 45%;
+            }
+
+            .compare-bar {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .overpay-counter .counter-value {
+                font-size: 1.5em;
+            }
+
+            .compare-modal-content {
+                overflow-x: auto;
+            }
         }
 
         footer {
@@ -634,8 +1242,31 @@
     </style>
 </head>
 <body>
+    <!-- Family Cabinet Button -->
+    <button class="cabinet-btn" id="cabinetBtn" title="Family Medicine Cabinet">👨‍👩‍👧‍👦<span class="badge" id="cabinetBadge" style="display:none;">0</span></button>
+
+    <!-- Cabinet Overlay -->
+    <div class="cabinet-overlay" id="cabinetOverlay"></div>
+
+    <!-- Cabinet Panel -->
+    <div class="cabinet-panel" id="cabinetPanel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <h2>👨‍👩‍👧‍👦 Family Cabinet</h2>
+            <button class="modal-close" onclick="toggleCabinet()" style="position:static;">&times;</button>
+        </div>
+        <p style="color:#888;font-size:13px;margin-bottom:15px;">Save medicines for each family member. All data stays on your device.</p>
+        <div class="add-member-form">
+            <input type="text" id="newMemberName" placeholder="Family member name...">
+            <button onclick="addMember()">Add</button>
+        </div>
+        <div id="cabinetMembers"></div>
+    </div>
+
     <!-- Dark Mode Toggle -->
     <button class="dark-mode-toggle" id="darkModeToggle" title="Toggle Dark Mode">🌙</button>
+
+    <!-- Hindi Toggle -->
+    <button class="lang-toggle" id="langToggle" title="Switch to Hindi">हिंदी</button>
 
     <!-- Back to Top Button -->
     <button class="back-to-top" id="backToTop" title="Back to Top">⬆</button>
@@ -646,6 +1277,13 @@
             <p class="tagline">Save up to 90% on medicines - Search 235+ medicines for cheaper generic alternatives instantly</p>
         </header>
 
+        <!-- Overpay Counter -->
+        <div class="overpay-counter">
+            <div class="counter-label">🇮🇳 Estimated Amount Indians Overpay on Branded Medicines</div>
+            <div class="counter-value" id="overpayCounter">₹0</div>
+            <div class="counter-sub">Every year, Indians spend ~₹1.5 lakh crore extra on branded medicines when generic alternatives exist</div>
+        </div>
+
         <div class="info-banner">
             <strong>💡 Did you know?</strong> The same medicine with the same composition costs 10-20 times more when branded! Find cheaper alternatives below.
         </div>
@@ -653,6 +1291,7 @@
         <div class="search-section">
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="Search 235+ medicines by brand name, generic name, or usage...">
+                <button class="voice-btn" id="voiceBtn" title="Voice Search">🎤</button>
             </div>
 
             <div class="category-filters">
@@ -681,11 +1320,99 @@
                 <option value="z-a">Name (Z-A)</option>
                 <option value="category">Category</option>
             </select>
+            <button class="bookmark-filter-btn" id="bookmarkFilterBtn" title="Show Saved Medicines">⭐ Saved</button>
+            <button class="bookmark-filter-btn" id="requestMedBtn" title="Request a Medicine" style="border-color:#667eea;color:#667eea;">➕ Request Medicine</button>
+            <button class="scan-btn" id="scanBtn" title="Scan Prescription">📷 Scan Prescription</button>
             <span class="results-count" id="resultsCount">Showing 235 medicines</span>
         </div>
 
         <div class="results-section" id="resultsSection">
             <!-- Results will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Compare Bar (fixed bottom) -->
+    <div class="compare-bar" id="compareBar">
+        <span id="compareBarText">0 medicines selected for comparison</span>
+        <div>
+            <button onclick="showComparison()">Compare Now</button>
+            <button onclick="clearComparison()" style="background:transparent;color:white;border:2px solid white;margin-left:8px;">Clear</button>
+        </div>
+    </div>
+
+    <!-- Request Medicine Modal -->
+    <div class="modal-overlay" id="requestModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="document.getElementById('requestModal').classList.remove('show')">&times;</button>
+            <h2>➕ Request a Medicine</h2>
+            <p style="margin-bottom:15px;color:#666;font-size:14px;">Can't find a medicine? Let us know and we'll add it!</p>
+            <form id="requestForm" action="https://formsubmit.co/contact@generic-med.org" method="POST">
+                <input type="hidden" name="_subject" value="New Medicine Request - Generic Med Finder">
+                <input type="hidden" name="_captcha" value="false">
+                <input type="hidden" name="_template" value="table">
+                <input type="text" name="medicine_name" placeholder="Medicine Name (Brand or Generic)" required>
+                <input type="text" name="purpose" placeholder="What is it used for? (optional)">
+                <input type="email" name="email" placeholder="Your Email (optional, for updates)">
+                <textarea name="details" placeholder="Any additional details..."></textarea>
+                <button type="submit" class="modal-submit">Submit Request</button>
+            </form>
+            <div class="modal-success" id="requestSuccess">✅ Thank you! We'll add this medicine soon.</div>
+        </div>
+    </div>
+
+    <!-- Compare Modal -->
+    <div class="modal-overlay" id="compareModal">
+        <div class="modal-content compare-modal-content">
+            <button class="modal-close" onclick="document.getElementById('compareModal').classList.remove('show')">&times;</button>
+            <h2>⚖️ Medicine Comparison</h2>
+            <div id="compareTableContainer"></div>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div class="modal-overlay" id="qrModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="document.getElementById('qrModal').classList.remove('show')">&times;</button>
+            <div class="qr-modal-body">
+                <h2>📱 Scan QR Code</h2>
+                <div class="qr-med-name" id="qrMedName"></div>
+                <div id="qrCodeContainer"></div>
+                <p style="color:#888;font-size:12px;margin-top:10px;">Scan to open this medicine on generic-med.org</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reminder Modal -->
+    <div class="modal-overlay" id="reminderModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="document.getElementById('reminderModal').classList.remove('show')">&times;</button>
+            <h2>⏰ Set Medicine Reminder</h2>
+            <p style="margin-bottom:15px;color:#666;font-size:14px;">Get browser notifications to remind you about this medicine.</p>
+            <div id="reminderMedName" style="font-weight:bold;color:#667eea;margin-bottom:15px;font-size:18px;"></div>
+            <label style="display:block;margin-bottom:8px;font-weight:600;">Reminder Time:</label>
+            <input type="time" id="reminderTime" value="09:00" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:15px;">
+            <label style="display:block;margin-bottom:8px;font-weight:600;">Repeat:</label>
+            <select id="reminderRepeat" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:20px;">
+                <option value="daily">Daily</option>
+                <option value="twice">Twice a day (9AM & 9PM)</option>
+                <option value="thrice">Three times a day (8AM, 2PM, 8PM)</option>
+            </select>
+            <button class="modal-submit" onclick="saveReminder()">Set Reminder</button>
+            <div id="remindersList" style="margin-top:20px;"></div>
+        </div>
+    </div>
+
+    <!-- Prescription Scanner Modal -->
+    <div class="modal-overlay" id="scanModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="document.getElementById('scanModal').classList.remove('show')">&times;</button>
+            <h2>📷 Prescription Scanner</h2>
+            <p style="margin-bottom:15px;color:#666;font-size:14px;"><strong>BETA:</strong> Upload a photo of your prescription and we'll try to find matching medicines in our database.</p>
+            <p style="margin-bottom:15px;color:#ff6b6b;font-size:12px;">⚠️ This is an experimental feature. Always verify with your doctor. We do NOT store your prescription.</p>
+            <input type="file" id="prescriptionFile" accept="image/*" capture="camera" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;margin-bottom:15px;">
+            <button class="modal-submit" id="scanProcessBtn" onclick="processPresciption()">Scan & Find Medicines</button>
+            <div id="scanStatus" style="text-align:center;margin-top:15px;color:#888;display:none;"></div>
+            <div id="scanResults" style="display:none;"></div>
         </div>
     </div>
 
@@ -701,20 +1428,26 @@
     </footer>
 
     <script>
-        // Medicine Database
+        // ===== BOOKMARKS & FEEDBACK STATE =====
+        let bookmarks = JSON.parse(localStorage.getItem('medBookmarks') || '[]');
+        let feedbackData = JSON.parse(localStorage.getItem('medFeedback') || '{}');
+        let showOnlyBookmarks = false;
+        let compareList = [];
+
+        // ===== Medicine Database =====
         const medicines = [
             {
                 brand: "Crocin",
                 generic: "Paracetamol",
                 category: "fever-pain",
                 usage: "Used for fever, headache, and body pain",
-                priceRange: "₹5-15 per strip",
+                priceRange: "₹15-30 per strip (10 tablets)",
                 alternatives: [
-                    { name: "Paracetamol (Generic)", price: "₹5-8" },
-                    { name: "Dolo 650", price: "₹12-15" },
-                    { name: "Calpol", price: "₹10-14" },
-                    { name: "Metacin", price: "₹6-10" },
-                    { name: "P-500", price: "₹5-8" }
+                    { name: "Paracetamol (Generic)", price: "₹8-12" },
+                    { name: "Dolo 650", price: "₹28-32" },
+                    { name: "Calpol", price: "₹14-18" },
+                    { name: "Metacin", price: "₹10-15" },
+                    { name: "P-500", price: "₹8-12" }
                 ]
             },
             {
@@ -722,13 +1455,13 @@
                 generic: "Paracetamol",
                 category: "fever-pain",
                 usage: "Used for fever, headache, and body pain",
-                priceRange: "₹5-15 per strip",
+                priceRange: "₹28-35 per strip (15 tablets)",
                 alternatives: [
-                    { name: "Paracetamol (Generic)", price: "₹5-8" },
-                    { name: "Crocin", price: "₹8-12" },
-                    { name: "Calpol", price: "₹10-14" },
-                    { name: "Metacin", price: "₹6-10" },
-                    { name: "P-500", price: "₹5-8" }
+                    { name: "Paracetamol (Generic)", price: "₹8-14" },
+                    { name: "Crocin 650", price: "₹15-25" },
+                    { name: "Calpol 650", price: "₹18-25" },
+                    { name: "Metacin", price: "₹10-15" },
+                    { name: "P-650", price: "₹10-15" }
                 ]
             },
             {
@@ -736,13 +1469,13 @@
                 generic: "Ibuprofen + Paracetamol",
                 category: "fever-pain",
                 usage: "Used for severe pain, inflammation, fever",
-                priceRange: "₹15-30 per strip",
+                priceRange: "₹38-48 per strip (20 tablets)",
                 alternatives: [
-                    { name: "Brufen Plus", price: "₹12-20" },
-                    { name: "Ibugesic Plus", price: "₹10-18" },
-                    { name: "Advil", price: "₹15-25" },
-                    { name: "Flexon", price: "₹12-22" },
-                    { name: "Generic Ibuprofen+PCM", price: "₹8-15" }
+                    { name: "Ibugesic Plus", price: "₹25-32" },
+                    { name: "Flexon", price: "₹30-38" },
+                    { name: "Brufen Plus", price: "₹22-30" },
+                    { name: "Generic Ibuprofen+PCM", price: "₹15-22" },
+                    { name: "Ibuclin", price: "₹18-25" }
                 ]
             },
             {
@@ -750,13 +1483,13 @@
                 generic: "Amoxicillin + Clavulanic Acid",
                 category: "antibiotics",
                 usage: "Antibiotic for bacterial infections, respiratory tract infections",
-                priceRange: "₹80-200 per strip",
+                priceRange: "₹180-260 per strip (625mg, 10 tablets)",
                 alternatives: [
-                    { name: "Clavam", price: "₹60-120" },
-                    { name: "Moxclav", price: "₹55-110" },
-                    { name: "Augpen", price: "₹70-130" },
-                    { name: "Generic Amox+Clav", price: "₹40-80" },
-                    { name: "Moxikind CV", price: "₹50-100" }
+                    { name: "Clavam 625", price: "₹130-170" },
+                    { name: "Moxikind CV 625", price: "₹110-150" },
+                    { name: "Moxclav 625", price: "₹105-140" },
+                    { name: "Generic Amox+Clav 625", price: "₹70-110" },
+                    { name: "Augpen 625", price: "₹120-160" }
                 ]
             },
             {
@@ -764,13 +1497,13 @@
                 generic: "Azithromycin",
                 category: "antibiotics",
                 usage: "Antibiotic for respiratory infections, skin infections",
-                priceRange: "₹60-150 per strip",
+                priceRange: "₹68-105 per strip (500mg, 3 tablets)",
                 alternatives: [
-                    { name: "Azithromycin (Generic)", price: "₹30-60" },
-                    { name: "Zady", price: "₹40-80" },
-                    { name: "Azee", price: "₹50-90" },
-                    { name: "Azithro", price: "₹35-70" },
-                    { name: "Azimax", price: "₹45-85" }
+                    { name: "Azithromycin (Generic)", price: "₹30-50" },
+                    { name: "Azee 500", price: "₹60-80" },
+                    { name: "Azifast 500", price: "₹45-65" },
+                    { name: "Azicip 500", price: "₹42-60" },
+                    { name: "Zithromax 500", price: "₹55-75" }
                 ]
             },
             {
@@ -778,11 +1511,11 @@
                 generic: "Insulin Glargine",
                 category: "diabetes",
                 usage: "Long-acting insulin for diabetes management",
-                priceRange: "₹1500-2500 per vial",
+                priceRange: "₹1200-1600 per 3ml cartridge",
                 alternatives: [
-                    { name: "Basalog", price: "₹800-1200" },
-                    { name: "Glaritus", price: "₹900-1300" },
-                    { name: "Insulin Glargine (Generic)", price: "₹700-1000" }
+                    { name: "Basalog (Biocon)", price: "₹540-680" },
+                    { name: "Glaritus (Wockhardt)", price: "₹580-720" },
+                    { name: "Insulin Glargine (Generic)", price: "₹500-650" }
                 ]
             },
             {
@@ -790,15 +1523,13 @@
                 generic: "Metformin",
                 category: "diabetes",
                 usage: "Controls blood sugar in Type 2 diabetes",
-                priceRange: "₹30-80 per strip",
-                nppaPrice: "₹1.92-₹3.66 per tablet",
-                nppaNote: "500mg: ₹1.92 | 1000mg: ₹3.66",
+                priceRange: "₹18-72 per strip (500mg: ₹18-30, 1000mg: ₹50-72)",
                 alternatives: [
-                    { name: "Metformin (Generic)", price: "₹15-35" },
-                    { name: "Obimet", price: "₹20-45" },
-                    { name: "Glucophage", price: "₹25-50" },
-                    { name: "Metsmall", price: "₹18-40" },
-                    { name: "Bigomet", price: "₹22-48" }
+                    { name: "Metformin (Generic)", price: "₹10-25" },
+                    { name: "Obimet 500", price: "₹15-28" },
+                    { name: "Glucophage 500", price: "₹30-45" },
+                    { name: "Metsmall 500", price: "₹12-22" },
+                    { name: "Bigomet 500", price: "₹18-30" }
                 ]
             },
             {
@@ -806,13 +1537,13 @@
                 generic: "Telmisartan",
                 category: "bp",
                 usage: "Controls high blood pressure",
-                priceRange: "₹80-180 per strip",
+                priceRange: "₹95-155 per strip (40mg: ₹95-120, 80mg: ₹130-155)",
                 alternatives: [
-                    { name: "Telmisartan (Generic)", price: "₹40-90" },
-                    { name: "Telmikind", price: "₹45-100" },
-                    { name: "Cresar", price: "₹60-120" },
-                    { name: "Telsar", price: "₹50-110" },
-                    { name: "Telpres", price: "₹55-115" }
+                    { name: "Telmisartan (Generic)", price: "₹30-55" },
+                    { name: "Telmikind 40", price: "₹50-70" },
+                    { name: "Cresar 40", price: "₹75-100" },
+                    { name: "Telsar 40", price: "₹55-75" },
+                    { name: "Telpres 40", price: "₹60-80" }
                 ]
             },
             {
@@ -820,13 +1551,13 @@
                 generic: "Amlodipine",
                 category: "bp",
                 usage: "Controls high blood pressure and chest pain",
-                priceRange: "₹30-70 per strip",
+                priceRange: "₹28-65 per strip (5mg: ₹28-40, 10mg: ₹45-65)",
                 alternatives: [
-                    { name: "Amlodipine (Generic)", price: "₹12-30" },
-                    { name: "Amlong", price: "₹15-35" },
-                    { name: "Amlokind", price: "₹18-38" },
-                    { name: "Stamlo", price: "₹20-40" },
-                    { name: "Amlovas", price: "₹22-45" }
+                    { name: "Amlodipine (Generic)", price: "₹8-18" },
+                    { name: "Amlong 5", price: "₹22-32" },
+                    { name: "Stamlo 5", price: "₹28-38" },
+                    { name: "Amlokind 5", price: "₹15-25" },
+                    { name: "Amlovas 5", price: "₹18-28" }
                 ]
             },
             {
@@ -834,13 +1565,13 @@
                 generic: "Pantoprazole",
                 category: "acidity",
                 usage: "Treats acidity, GERD, stomach ulcers",
-                priceRange: "₹30-80 per strip",
+                priceRange: "₹55-110 per strip (40mg, 10/15 tablets)",
                 alternatives: [
-                    { name: "Pantoprazole (Generic)", price: "₹15-30" },
-                    { name: "Pan", price: "₹18-35" },
-                    { name: "Pantocid", price: "₹20-40" },
-                    { name: "Pent", price: "₹16-32" },
-                    { name: "Pantocar", price: "₹17-33" }
+                    { name: "Pantoprazole (Generic)", price: "₹25-45" },
+                    { name: "Pan 40", price: "₹55-75" },
+                    { name: "Pantocid 40", price: "₹60-85" },
+                    { name: "Pantop 40", price: "₹50-70" },
+                    { name: "Pantocar 40", price: "₹42-60" }
                 ]
             },
             {
@@ -848,13 +1579,13 @@
                 generic: "Rabeprazole",
                 category: "acidity",
                 usage: "Treats acidity, heartburn, GERD",
-                priceRange: "₹40-90 per strip",
+                priceRange: "₹90-145 per strip (20mg, 10 tablets)",
                 alternatives: [
-                    { name: "Rabeprazole (Generic)", price: "₹20-45" },
-                    { name: "Razo", price: "₹25-50" },
-                    { name: "Happi", price: "₹22-48" },
-                    { name: "Rabicip", price: "₹23-47" },
-                    { name: "Rabeloc", price: "₹24-49" }
+                    { name: "Rabeprazole (Generic)", price: "₹35-55" },
+                    { name: "Razo 20", price: "₹75-100" },
+                    { name: "Happi 20", price: "₹65-90" },
+                    { name: "Rabicip 20", price: "₹70-95" },
+                    { name: "Rabeloc 20", price: "₹60-85" }
                 ]
             },
             {
@@ -862,13 +1593,13 @@
                 generic: "Fexofenadine",
                 category: "cold-cough",
                 usage: "Treats allergies, hay fever, skin allergies",
-                priceRange: "₹80-150 per strip",
+                priceRange: "₹140-210 per strip (120mg, 10 tablets)",
                 alternatives: [
-                    { name: "Fexofenadine (Generic)", price: "₹40-80" },
-                    { name: "Fexo", price: "₹45-85" },
-                    { name: "Lcfex", price: "₹42-82" },
-                    { name: "Altiva", price: "₹48-88" },
-                    { name: "Fexofen", price: "₹43-83" }
+                    { name: "Fexofenadine (Generic)", price: "₹50-80" },
+                    { name: "Fexo 120", price: "₹80-110" },
+                    { name: "Altiva 120", price: "₹85-115" },
+                    { name: "Fexova 120", price: "₹60-90" },
+                    { name: "Allerfex 120", price: "₹70-100" }
                 ]
             },
             {
@@ -876,13 +1607,13 @@
                 generic: "Cetirizine",
                 category: "cold-cough",
                 usage: "Treats allergies, runny nose, itching",
-                priceRange: "₹15-40 per strip",
+                priceRange: "₹20-45 per strip (10mg, 10 tablets)",
                 alternatives: [
                     { name: "Cetirizine (Generic)", price: "₹8-15" },
-                    { name: "Alerid", price: "₹10-20" },
-                    { name: "Okacet", price: "₹9-18" },
-                    { name: "Cetzine", price: "₹8-16" },
-                    { name: "Zyrtec", price: "₹12-22" }
+                    { name: "Alerid 10", price: "₹18-28" },
+                    { name: "Okacet 10", price: "₹15-25" },
+                    { name: "Cetzine 10", price: "₹22-35" },
+                    { name: "Zyrtec 10", price: "₹30-45" }
                 ]
             },
             {
@@ -890,13 +1621,13 @@
                 generic: "Paracetamol + Phenylephrine + Caffeine",
                 category: "cold-cough",
                 usage: "Relief from cold, headache, nasal congestion",
-                priceRange: "₹25-50 per strip",
+                priceRange: "₹22-35 per strip (10 tablets)",
                 alternatives: [
-                    { name: "Coldact", price: "₹15-30" },
-                    { name: "Sinarest", price: "₹12-28" },
-                    { name: "D Cold Total", price: "₹18-35" },
-                    { name: "Chericof", price: "₹14-32" },
-                    { name: "Generic Cold Relief", price: "₹10-20" }
+                    { name: "D Cold Total", price: "₹20-30" },
+                    { name: "Sinarest", price: "₹18-28" },
+                    { name: "Coldact Plus", price: "₹35-50" },
+                    { name: "Cheston Cold", price: "₹25-35" },
+                    { name: "Generic Cold Relief", price: "₹10-18" }
                 ]
             },
             {
@@ -904,13 +1635,13 @@
                 generic: "Vitamin B Complex",
                 category: "vitamins",
                 usage: "Treats vitamin B deficiency, improves energy",
-                priceRange: "₹40-90 per strip",
+                priceRange: "₹30-42 per strip (20 capsules)",
                 alternatives: [
-                    { name: "B Complex (Generic)", price: "₹15-35" },
-                    { name: "Neurobion", price: "₹20-45" },
-                    { name: "Supradyn", price: "₹25-50" },
-                    { name: "Polybion", price: "₹18-40" },
-                    { name: "Nervijen", price: "₹22-48" }
+                    { name: "B Complex (Generic)", price: "₹12-20" },
+                    { name: "Polybion", price: "₹25-35" },
+                    { name: "Cobadex Forte", price: "₹28-38" },
+                    { name: "Beplex Forte", price: "₹22-32" },
+                    { name: "Zevit", price: "₹55-75" }
                 ]
             },
             {
@@ -918,13 +1649,13 @@
                 generic: "Calcium + Vitamin D3",
                 category: "vitamins",
                 usage: "Treats calcium deficiency, strengthens bones",
-                priceRange: "₹80-150 per strip",
+                priceRange: "₹130-175 per strip (500mg, 15 tablets)",
                 alternatives: [
-                    { name: "Calcium+D3 (Generic)", price: "₹30-60" },
-                    { name: "Calcimax", price: "₹35-70" },
-                    { name: "Calshine", price: "₹32-65" },
-                    { name: "Caldikind", price: "₹38-72" },
-                    { name: "Ostocalcium", price: "₹40-75" }
+                    { name: "Calcium+D3 (Generic)", price: "₹45-70" },
+                    { name: "Calcimax 500", price: "₹95-125" },
+                    { name: "Ostocalcium", price: "₹85-110" },
+                    { name: "Caldikind Plus", price: "₹55-80" },
+                    { name: "CCM", price: "₹50-70" }
                 ]
             },
             {
@@ -932,12 +1663,12 @@
                 generic: "Vitamin E",
                 category: "vitamins",
                 usage: "Antioxidant, improves skin health",
-                priceRange: "₹50-120 per strip",
+                priceRange: "₹22-38 per strip (400mg, 10 capsules)",
                 alternatives: [
-                    { name: "Vitamin E (Generic)", price: "₹20-40" },
-                    { name: "Evitol", price: "₹25-50" },
-                    { name: "E-Gen", price: "₹22-45" },
-                    { name: "Tocofil", price: "₹28-55" }
+                    { name: "Vitamin E (Generic)", price: "₹12-22" },
+                    { name: "E-Gen 400", price: "₹18-28" },
+                    { name: "Tocofil 400", price: "₹15-25" },
+                    { name: "Evanorm 400", price: "₹20-30" }
                 ]
             },
             {
@@ -945,13 +1676,12 @@
                 generic: "Vitamin C",
                 category: "vitamins",
                 usage: "Boosts immunity, treats vitamin C deficiency",
-                priceRange: "₹30-60 per strip",
+                priceRange: "₹18-30 per strip (500mg, 15 chewable tablets)",
                 alternatives: [
-                    { name: "Vitamin C (Generic)", price: "₹10-20" },
-                    { name: "Cecon", price: "₹12-25" },
-                    { name: "Celin", price: "₹15-28" },
-                    { name: "C-Vit", price: "₹11-22" },
-                    { name: "Ascorbic Acid", price: "₹8-18" }
+                    { name: "Vitamin C (Generic)", price: "₹8-15" },
+                    { name: "Celin 500", price: "₹25-35" },
+                    { name: "C-Vit 500", price: "₹10-18" },
+                    { name: "Ascorbic Acid 500", price: "₹8-14" }
                 ]
             },
             {
@@ -959,13 +1689,13 @@
                 generic: "Ibuprofen",
                 category: "fever-pain",
                 usage: "Pain relief, reduces inflammation and fever",
-                priceRange: "₹20-45 per strip",
+                priceRange: "₹30-55 per strip (400mg, 10 tablets)",
                 alternatives: [
-                    { name: "Ibuprofen (Generic)", price: "₹8-18" },
-                    { name: "Ibugesic", price: "₹10-22" },
-                    { name: "Ibugesic Plus", price: "₹12-25" },
-                    { name: "Advil", price: "₹15-30" },
-                    { name: "Ibuclin", price: "₹11-23" }
+                    { name: "Ibuprofen (Generic)", price: "₹12-22" },
+                    { name: "Ibugesic 400", price: "₹18-28" },
+                    { name: "Advil 400", price: "₹25-38" },
+                    { name: "Ibuclin", price: "₹15-25" },
+                    { name: "Ibuprofen IP", price: "₹10-18" }
                 ]
             },
             {
@@ -973,12 +1703,12 @@
                 generic: "Aspirin",
                 category: "fever-pain",
                 usage: "Pain relief, prevents blood clots, reduces fever",
-                priceRange: "₹10-25 per strip",
+                priceRange: "₹8-18 per strip (350mg, 10 tablets)",
                 alternatives: [
                     { name: "Aspirin (Generic)", price: "₹5-10" },
-                    { name: "Ecosprin", price: "₹6-12" },
-                    { name: "Loprin", price: "₹7-13" },
-                    { name: "Aspent", price: "₹6-11" }
+                    { name: "Ecosprin 75/150", price: "₹8-18" },
+                    { name: "Loprin 75", price: "₹12-20" },
+                    { name: "Aspent", price: "₹6-12" }
                 ]
             },
             {
@@ -986,13 +1716,13 @@
                 generic: "Diclofenac",
                 category: "fever-pain",
                 usage: "Pain relief, treats arthritis, muscle pain",
-                priceRange: "₹30-70 per strip",
+                priceRange: "₹25-55 per strip (50mg, 10 tablets)",
                 alternatives: [
-                    { name: "Diclofenac (Generic)", price: "₹12-25" },
-                    { name: "Voveran", price: "₹15-30" },
-                    { name: "Diclogesic", price: "₹14-28" },
-                    { name: "Flexon", price: "₹13-27" },
-                    { name: "Arthril", price: "₹16-32" }
+                    { name: "Diclofenac (Generic)", price: "₹8-18" },
+                    { name: "Voveran 50", price: "₹28-42" },
+                    { name: "Diclogesic 50", price: "₹15-25" },
+                    { name: "Dynapar", price: "₹20-32" },
+                    { name: "Reactin", price: "₹18-28" }
                 ]
             },
             {
@@ -1000,13 +1730,13 @@
                 generic: "Ciprofloxacin",
                 category: "antibiotics",
                 usage: "Antibiotic for bacterial infections, UTI",
-                priceRange: "₹50-120 per strip",
+                priceRange: "₹40-90 per strip (500mg, 10 tablets)",
                 alternatives: [
-                    { name: "Ciprofloxacin (Generic)", price: "₹20-45" },
-                    { name: "Ciplox", price: "₹25-50" },
-                    { name: "Cifran", price: "₹22-48" },
-                    { name: "Ciprowin", price: "₹23-47" },
-                    { name: "Alcipro", price: "₹24-49" }
+                    { name: "Ciprofloxacin (Generic)", price: "₹15-30" },
+                    { name: "Ciplox 500", price: "₹55-75" },
+                    { name: "Cifran 500", price: "₹50-70" },
+                    { name: "Ciprowin 500", price: "₹30-48" },
+                    { name: "Alcipro 500", price: "₹35-50" }
                 ]
             },
             {
@@ -1014,13 +1744,13 @@
                 generic: "Amoxicillin",
                 category: "antibiotics",
                 usage: "Antibiotic for ear, throat, skin infections",
-                priceRange: "₹40-90 per strip",
+                priceRange: "₹55-95 per strip (500mg, 10 capsules)",
                 alternatives: [
-                    { name: "Amoxicillin (Generic)", price: "₹18-35" },
-                    { name: "Novamox", price: "₹20-40" },
-                    { name: "Almox", price: "₹19-38" },
-                    { name: "Wymox", price: "₹21-42" },
-                    { name: "Amoxil", price: "₹22-45" }
+                    { name: "Amoxicillin (Generic)", price: "₹20-35" },
+                    { name: "Novamox 500", price: "₹45-65" },
+                    { name: "Almox 500", price: "₹40-60" },
+                    { name: "Wymox 500", price: "₹35-55" },
+                    { name: "Amoxil 500", price: "₹50-70" }
                 ]
             },
             {
@@ -1028,13 +1758,13 @@
                 generic: "Cefixime",
                 category: "antibiotics",
                 usage: "Antibiotic for respiratory, urinary tract infections",
-                priceRange: "₹70-150 per strip",
+                priceRange: "₹90-160 per strip (200mg, 10 tablets)",
                 alternatives: [
-                    { name: "Cefixime (Generic)", price: "₹30-65" },
-                    { name: "Cefolac", price: "₹35-70" },
-                    { name: "Ceftas", price: "₹32-68" },
-                    { name: "Milixim", price: "₹38-75" },
-                    { name: "Taxim O", price: "₹40-80" }
+                    { name: "Cefixime (Generic)", price: "₹35-60" },
+                    { name: "Cefolac 200", price: "₹65-90" },
+                    { name: "Taxim O 200", price: "₹75-110" },
+                    { name: "Milixim 200", price: "₹55-80" },
+                    { name: "Ceftas 200", price: "₹50-75" }
                 ]
             },
             {
@@ -1042,12 +1772,12 @@
                 generic: "Erythromycin",
                 category: "antibiotics",
                 usage: "Antibiotic for respiratory tract infections",
-                priceRange: "₹35-80 per strip",
+                priceRange: "₹60-100 per strip (500mg, 10 tablets)",
                 alternatives: [
-                    { name: "Erythromycin (Generic)", price: "₹15-30" },
-                    { name: "Erytop", price: "₹18-35" },
-                    { name: "E-Mycin", price: "₹20-38" },
-                    { name: "Erythrocin", price: "₹17-33" }
+                    { name: "Erythromycin (Generic)", price: "₹25-45" },
+                    { name: "E-Mycin 500", price: "₹40-60" },
+                    { name: "Erythrocin 500", price: "₹35-55" },
+                    { name: "Citamycin 500", price: "₹30-50" }
                 ]
             },
             {
@@ -1055,12 +1785,12 @@
                 generic: "Acarbose",
                 category: "diabetes",
                 usage: "Controls blood sugar after meals in diabetes",
-                priceRange: "₹100-200 per strip",
+                priceRange: "₹110-170 per strip (50mg, 10 tablets)",
                 alternatives: [
-                    { name: "Acarbose (Generic)", price: "₹45-90" },
-                    { name: "Prandial", price: "₹50-100" },
-                    { name: "Carbose", price: "₹48-95" },
-                    { name: "Glucar", price: "₹52-105" }
+                    { name: "Acarbose (Generic)", price: "₹40-70" },
+                    { name: "Prandial 50", price: "₹55-80" },
+                    { name: "Carbose 50", price: "₹50-75" },
+                    { name: "Rebose 50", price: "₹60-85" }
                 ]
             },
             {
@@ -1068,12 +1798,12 @@
                 generic: "Glimepiride",
                 category: "diabetes",
                 usage: "Controls blood sugar in Type 2 diabetes",
-                priceRange: "₹60-140 per strip",
+                priceRange: "₹55-120 per strip (1mg: ₹55-70, 2mg: ₹80-120)",
                 alternatives: [
-                    { name: "Glimepiride (Generic)", price: "₹25-55" },
-                    { name: "Glimisave", price: "₹28-60" },
-                    { name: "Glyciphage G", price: "₹30-65" },
-                    { name: "Gemer", price: "₹32-68" }
+                    { name: "Glimepiride (Generic)", price: "₹15-35" },
+                    { name: "Glimisave 2", price: "₹30-50" },
+                    { name: "Gemer 2", price: "₹40-60" },
+                    { name: "Glimstar 2", price: "₹25-42" }
                 ]
             },
             {
@@ -1081,12 +1811,12 @@
                 generic: "Sitagliptin",
                 category: "diabetes",
                 usage: "Controls blood sugar in Type 2 diabetes",
-                priceRange: "₹250-450 per strip",
+                priceRange: "₹450-650 per strip (100mg, 7 tablets)",
                 alternatives: [
-                    { name: "Sitagliptin (Generic)", price: "₹100-200" },
-                    { name: "Istavel", price: "₹110-220" },
-                    { name: "Zita", price: "₹105-210" },
-                    { name: "Sitamet", price: "₹115-225" }
+                    { name: "Istavel 100", price: "₹280-380" },
+                    { name: "Zita 100", price: "₹250-350" },
+                    { name: "Sitagliptin (Generic)", price: "₹180-280" },
+                    { name: "Sitajit 100", price: "₹200-300" }
                 ]
             },
             {
@@ -1094,12 +1824,12 @@
                 generic: "Amlodipine",
                 category: "bp",
                 usage: "Controls high blood pressure",
-                priceRange: "₹40-90 per strip",
+                priceRange: "₹42-80 per strip (5mg, 14 tablets)",
                 alternatives: [
-                    { name: "Amlodipine (Generic)", price: "₹12-30" },
-                    { name: "Amlong", price: "₹15-35" },
-                    { name: "Amlokind", price: "₹18-38" },
-                    { name: "Stamlo", price: "₹20-40" }
+                    { name: "Amlodipine (Generic)", price: "₹8-18" },
+                    { name: "Amlong 5", price: "₹22-32" },
+                    { name: "Stamlo 5", price: "₹28-38" },
+                    { name: "Amlokind 5", price: "₹15-25" }
                 ]
             },
             {
@@ -1107,12 +1837,12 @@
                 generic: "Losartan",
                 category: "bp",
                 usage: "Controls high blood pressure, protects kidneys",
-                priceRange: "₹70-140 per strip",
+                priceRange: "₹70-130 per strip (50mg, 10 tablets)",
                 alternatives: [
-                    { name: "Losartan (Generic)", price: "₹30-60" },
-                    { name: "Losacar", price: "₹35-68" },
-                    { name: "Repace", price: "₹32-65" },
-                    { name: "Losakind", price: "₹33-66" }
+                    { name: "Losartan (Generic)", price: "₹22-40" },
+                    { name: "Losacar 50", price: "₹40-60" },
+                    { name: "Repace 50", price: "₹55-78" },
+                    { name: "Losakind 50", price: "₹35-55" }
                 ]
             },
             {
@@ -1120,12 +1850,12 @@
                 generic: "Nifedipine",
                 category: "bp",
                 usage: "Controls high blood pressure and chest pain",
-                priceRange: "₹50-110 per strip",
+                priceRange: "₹25-60 per strip (10mg, 10 tablets)",
                 alternatives: [
-                    { name: "Nifedipine (Generic)", price: "₹20-45" },
-                    { name: "Adalat", price: "₹25-55" },
-                    { name: "Niflong", price: "₹22-50" },
-                    { name: "Calcigard", price: "₹28-58" }
+                    { name: "Nifedipine (Generic)", price: "₹10-22" },
+                    { name: "Adalat 10", price: "₹20-35" },
+                    { name: "Calcigard 10", price: "₹18-30" },
+                    { name: "Depin 10", price: "₹15-28" }
                 ]
             },
             {
@@ -1133,12 +1863,12 @@
                 generic: "Esomeprazole",
                 category: "acidity",
                 usage: "Treats GERD, acidity, stomach ulcers",
-                priceRange: "₹60-150 per strip",
+                priceRange: "₹120-195 per strip (40mg, 10 tablets)",
                 alternatives: [
-                    { name: "Esomeprazole (Generic)", price: "₹25-60" },
-                    { name: "Esoz", price: "₹28-65" },
-                    { name: "Raciper", price: "₹30-68" },
-                    { name: "Sompraz", price: "₹32-70" }
+                    { name: "Esomeprazole (Generic)", price: "₹40-65" },
+                    { name: "Sompraz 40", price: "₹90-130" },
+                    { name: "Raciper 40", price: "₹85-120" },
+                    { name: "Neksium 40", price: "₹100-145" }
                 ]
             },
             {
@@ -1146,12 +1876,12 @@
                 generic: "Aluminium Hydroxide + Magnesium",
                 category: "acidity",
                 usage: "Quick relief from acidity and heartburn",
-                priceRange: "₹30-60 per bottle",
+                priceRange: "₹55-100 per bottle (170ml)",
                 alternatives: [
-                    { name: "Digene", price: "₹15-35" },
-                    { name: "Mucaine", price: "₹18-38" },
-                    { name: "Ulgel", price: "₹12-30" },
-                    { name: "Antacid Suspension", price: "₹10-25" }
+                    { name: "Digene Gel", price: "₹60-90" },
+                    { name: "Mucaine Gel", price: "₹70-105" },
+                    { name: "Ulgel", price: "₹40-60" },
+                    { name: "Antacid Suspension (Generic)", price: "₹25-45" }
                 ]
             },
             {
@@ -1159,12 +1889,12 @@
                 generic: "Lansoprazole",
                 category: "acidity",
                 usage: "Treats stomach ulcers, GERD, acidity",
-                priceRange: "₹50-120 per strip",
+                priceRange: "₹70-130 per strip (30mg, 10 capsules)",
                 alternatives: [
-                    { name: "Lansoprazole (Generic)", price: "₹22-50" },
-                    { name: "Lanzol", price: "₹25-55" },
-                    { name: "Lanzap", price: "₹23-52" },
-                    { name: "Lansol", price: "₹24-53" }
+                    { name: "Lansoprazole (Generic)", price: "₹25-45" },
+                    { name: "Lanzol 30", price: "₹65-90" },
+                    { name: "Lanzap 30", price: "₹55-80" },
+                    { name: "Lanpro 30", price: "₹40-60" }
                 ]
             },
             {
@@ -1172,12 +1902,12 @@
                 generic: "Diphenhydramine",
                 category: "cold-cough",
                 usage: "Treats allergies, cough, cold symptoms",
-                priceRange: "₹40-90 per bottle",
+                priceRange: "₹85-120 per bottle (100ml syrup)",
                 alternatives: [
-                    { name: "Diphenhydramine (Generic)", price: "₹15-35" },
-                    { name: "Phenergan", price: "₹20-45" },
-                    { name: "Allergin", price: "₹18-40" },
-                    { name: "Dilosyn", price: "₹22-48" }
+                    { name: "Diphenhydramine (Generic)", price: "₹30-50" },
+                    { name: "Phenergan Syrup", price: "₹45-65" },
+                    { name: "Alex Syrup", price: "₹60-85" },
+                    { name: "Torex Syrup", price: "₹50-70" }
                 ]
             },
             {
@@ -1185,12 +1915,12 @@
                 generic: "Montelukast",
                 category: "cold-cough",
                 usage: "Prevents asthma, treats allergic rhinitis",
-                priceRange: "₹80-180 per strip",
+                priceRange: "₹140-210 per strip (10mg, 15 tablets)",
                 alternatives: [
-                    { name: "Montelukast (Generic)", price: "₹35-75" },
-                    { name: "Montec", price: "₹40-82" },
-                    { name: "Montek", price: "₹38-78" },
-                    { name: "Telekast", price: "₹42-85" }
+                    { name: "Montelukast (Generic)", price: "₹50-85" },
+                    { name: "Montek 10", price: "₹120-165" },
+                    { name: "Telekast 10", price: "₹90-130" },
+                    { name: "Montec LC", price: "₹110-155" }
                 ]
             },
             {
@@ -1198,12 +1928,12 @@
                 generic: "Paracetamol + Chlorpheniramine + Phenylephrine",
                 category: "cold-cough",
                 usage: "Relief from cold, flu, nasal congestion",
-                priceRange: "₹25-50 per strip",
+                priceRange: "₹18-32 per strip (10 tablets)",
                 alternatives: [
-                    { name: "Cheston Cold", price: "₹15-30" },
-                    { name: "D Cold Total", price: "₹18-35" },
-                    { name: "Coldact", price: "₹16-32" },
-                    { name: "Sinarest AF", price: "₹12-28" }
+                    { name: "Cheston Cold", price: "₹28-42" },
+                    { name: "D Cold Total", price: "₹22-35" },
+                    { name: "Coldact Plus", price: "₹35-50" },
+                    { name: "Sinarest AF", price: "₹15-25" }
                 ]
             },
             {
@@ -1211,12 +1941,12 @@
                 generic: "Guaifenesin",
                 category: "cold-cough",
                 usage: "Loosens mucus and relieves chest congestion",
-                priceRange: "₹100-200 per bottle",
+                priceRange: "₹80-140 per bottle (100ml syrup)",
                 alternatives: [
-                    { name: "Guaifenesin (Generic)", price: "₹40-80" },
-                    { name: "Grilinctus", price: "₹45-85" },
-                    { name: "Cofnil", price: "₹42-82" },
-                    { name: "Tusq-DX", price: "₹48-88" }
+                    { name: "Guaifenesin (Generic)", price: "₹30-55" },
+                    { name: "Grilinctus BM", price: "₹75-105" },
+                    { name: "Tusq-DX", price: "₹65-90" },
+                    { name: "Cofnil Syrup", price: "₹50-75" }
                 ]
             },
             {
@@ -1224,12 +1954,12 @@
                 generic: "Multivitamin + Minerals",
                 category: "vitamins",
                 usage: "Improves energy, treats vitamin deficiency",
-                priceRange: "₹150-300 per strip",
+                priceRange: "₹175-260 per box (30 capsules)",
                 alternatives: [
-                    { name: "Multivitamin (Generic)", price: "₹50-100" },
-                    { name: "Supradyn", price: "₹60-120" },
-                    { name: "A to Z", price: "₹55-110" },
-                    { name: "Zincovit", price: "₹65-130" }
+                    { name: "Supradyn Daily", price: "₹125-165" },
+                    { name: "A to Z NS", price: "₹80-115" },
+                    { name: "Zincovit", price: "₹130-175" },
+                    { name: "Multivitamin (Generic)", price: "₹50-85" }
                 ]
             },
             {
@@ -1237,12 +1967,12 @@
                 generic: "Vitamin B1, B6, B12",
                 category: "vitamins",
                 usage: "Treats nerve problems, vitamin B deficiency",
-                priceRange: "₹50-110 per strip",
+                priceRange: "₹32-48 per strip (30 tablets)",
                 alternatives: [
-                    { name: "B Complex (Generic)", price: "₹15-35" },
-                    { name: "Methylcobal", price: "₹20-45" },
-                    { name: "Nervigen", price: "₹22-48" },
-                    { name: "Bestozyme", price: "₹18-40" }
+                    { name: "Methylcobalamin (Generic)", price: "₹30-55" },
+                    { name: "Nervijen Plus", price: "₹55-80" },
+                    { name: "Meconerv", price: "₹40-60" },
+                    { name: "Mecobalamin", price: "₹25-45" }
                 ]
             },
             {
@@ -1250,12 +1980,12 @@
                 generic: "Folic Acid",
                 category: "vitamins",
                 usage: "Treats anemia, important during pregnancy",
-                priceRange: "₹20-40 per strip",
+                priceRange: "₹10-22 per strip (5mg, 30 tablets)",
                 alternatives: [
                     { name: "Folic Acid (Generic)", price: "₹5-12" },
-                    { name: "Folifer", price: "₹8-15" },
+                    { name: "Folart 5", price: "₹8-15" },
                     { name: "Fol-G", price: "₹7-14" },
-                    { name: "Folart", price: "₹9-16" }
+                    { name: "FolQ 5", price: "₹9-16" }
                 ]
             },
             {
@@ -1263,12 +1993,12 @@
                 generic: "Iron + Vitamin C",
                 category: "vitamins",
                 usage: "Treats iron deficiency anemia",
-                priceRange: "₹60-130 per strip",
+                priceRange: "₹75-130 per strip (10 tablets)",
                 alternatives: [
-                    { name: "Iron+C (Generic)", price: "₹25-55" },
-                    { name: "Autrin", price: "₹30-60" },
-                    { name: "Orofer XT", price: "₹35-68" },
-                    { name: "Hemfer", price: "₹28-58" }
+                    { name: "Orofer XT", price: "₹95-130" },
+                    { name: "Autrin Plus", price: "₹80-110" },
+                    { name: "Hemfer", price: "₹60-85" },
+                    { name: "Iron+Folic Acid (Generic)", price: "₹25-45" }
                 ]
             },
             {
@@ -1276,12 +2006,12 @@
                 generic: "Zinc + Multivitamins",
                 category: "vitamins",
                 usage: "Boosts immunity, treats deficiencies",
-                priceRange: "₹100-200 per strip",
+                priceRange: "₹130-175 per bottle (30 tablets)",
                 alternatives: [
-                    { name: "Zinc + Multi (Generic)", price: "₹40-80" },
-                    { name: "Supradyn Daily", price: "₹50-100" },
-                    { name: "Revital H", price: "₹60-120" },
-                    { name: "A to Z NS", price: "₹45-90" }
+                    { name: "A to Z NS", price: "₹80-115" },
+                    { name: "Supradyn Daily", price: "₹125-165" },
+                    { name: "Revital H", price: "₹175-260" },
+                    { name: "Multivitamin (Generic)", price: "₹50-85" }
                 ]
             },
             {
@@ -1289,12 +2019,12 @@
                 generic: "Paracetamol",
                 category: "fever-pain",
                 usage: "Used for fever and pain relief in children and adults",
-                priceRange: "₹5-15 per strip",
+                priceRange: "₹14-25 per strip (500mg, 10 tablets)",
                 alternatives: [
-                    { name: "Paracetamol (Generic)", price: "₹5-8" },
-                    { name: "Crocin", price: "₹8-12" },
-                    { name: "Dolo 650", price: "₹12-15" },
-                    { name: "Metacin", price: "₹6-10" }
+                    { name: "Paracetamol (Generic)", price: "₹8-14" },
+                    { name: "Crocin 500", price: "₹15-25" },
+                    { name: "Dolo 650", price: "₹28-35" },
+                    { name: "Metacin 500", price: "₹10-16" }
                 ]
             },
             {
@@ -1302,12 +2032,12 @@
                 generic: "Diclofenac",
                 category: "fever-pain",
                 usage: "Pain relief and anti-inflammatory",
-                priceRange: "₹25-60 per strip",
+                priceRange: "₹28-55 per strip (50mg, 10 tablets)",
                 alternatives: [
-                    { name: "Diclofenac (Generic)", price: "₹12-25" },
-                    { name: "Voltaren", price: "₹18-35" },
-                    { name: "Diclogesic", price: "₹14-28" },
-                    { name: "Flexon", price: "₹13-27" }
+                    { name: "Diclofenac (Generic)", price: "₹8-18" },
+                    { name: "Voltaren 50", price: "₹25-42" },
+                    { name: "Dynapar 50", price: "₹20-35" },
+                    { name: "Reactin 50", price: "₹18-30" }
                 ]
             },
             {
@@ -1315,12 +2045,12 @@
                 generic: "Ranitidine",
                 category: "acidity",
                 usage: "Treats acidity, heartburn, ulcers",
-                priceRange: "₹30-70 per strip",
+                priceRange: "₹30-55 per strip (150mg, 10 tablets)",
                 alternatives: [
-                    { name: "Ranitidine (Generic)", price: "₹12-28" },
-                    { name: "Rantac", price: "₹15-32" },
-                    { name: "Aciloc", price: "₹14-30" },
-                    { name: "Zinetac", price: "₹16-34" }
+                    { name: "Ranitidine (Generic)", price: "₹10-20" },
+                    { name: "Rantac 150", price: "₹20-32" },
+                    { name: "Aciloc 150", price: "₹22-35" },
+                    { name: "Zinetac 150", price: "₹18-30" }
                 ]
             },
             {
@@ -1328,12 +2058,12 @@
                 generic: "Ranitidine",
                 category: "acidity",
                 usage: "Reduces stomach acid, treats ulcers",
-                priceRange: "₹25-60 per strip",
+                priceRange: "₹20-38 per strip (150mg, 10 tablets)",
                 alternatives: [
-                    { name: "Ranitidine (Generic)", price: "₹12-28" },
-                    { name: "Aciloc", price: "₹14-30" },
-                    { name: "Zantac", price: "₹18-35" },
-                    { name: "Zinetac", price: "₹16-34" }
+                    { name: "Ranitidine (Generic)", price: "₹10-20" },
+                    { name: "Aciloc 150", price: "₹22-35" },
+                    { name: "Zantac 150", price: "₹30-48" },
+                    { name: "Zinetac 150", price: "₹18-30" }
                 ]
             },
             {
@@ -1341,11 +2071,11 @@
                 generic: "Promethazine",
                 category: "cold-cough",
                 usage: "Prevents motion sickness, treats allergies",
-                priceRange: "₹20-45 per strip",
+                priceRange: "₹18-35 per strip (25mg, 10 tablets)",
                 alternatives: [
-                    { name: "Promethazine (Generic)", price: "₹10-22" },
-                    { name: "Phenergan", price: "₹12-25" },
-                    { name: "Histantin", price: "₹11-23" }
+                    { name: "Promethazine (Generic)", price: "₹8-18" },
+                    { name: "Phenergan 25", price: "₹15-28" },
+                    { name: "Histantin", price: "₹12-22" }
                 ]
             },
             {
@@ -1353,12 +2083,12 @@
                 generic: "Prednisolone",
                 category: "antibiotics",
                 usage: "Reduces inflammation, treats allergies",
-                priceRange: "₹40-90 per strip",
+                priceRange: "₹15-45 per strip (5mg: ₹15-22, 10mg: ₹25-45)",
                 alternatives: [
-                    { name: "Prednisolone (Generic)", price: "₹15-35" },
-                    { name: "Omnacortil", price: "₹18-40" },
-                    { name: "Deltacortril", price: "₹20-42" },
-                    { name: "Hostacortin", price: "₹17-38" }
+                    { name: "Prednisolone (Generic)", price: "₹8-18" },
+                    { name: "Omnacortil 5", price: "₹12-20" },
+                    { name: "Deltacortril 5", price: "₹15-25" },
+                    { name: "Hostacortin 5", price: "₹10-18" }
                 ]
             },
             {
@@ -1366,14 +2096,12 @@
                 generic: "Atorvastatin",
                 category: "heart",
                 usage: "Lowers cholesterol, prevents heart disease",
-                priceRange: "₹50-120 per strip",
-                nppaPrice: "₹5.50-₹19.34 per tablet",
-                nppaNote: "10mg: ₹5.50 | 20mg: ₹13.32 | 40mg: ₹19.34",
+                priceRange: "₹65-190 per strip (10mg: ₹65-95, 20mg: ₹100-140, 40mg: ₹145-190)",
                 alternatives: [
-                    { name: "Atorvastatin (Generic)", price: "₹20-45" },
-                    { name: "Lipitor", price: "₹25-55" },
-                    { name: "Atorlip", price: "₹22-48" },
-                    { name: "Tonact", price: "₹28-58" }
+                    { name: "Atorvastatin (Generic)", price: "₹25-55" },
+                    { name: "Atorlip 10/20", price: "₹40-80" },
+                    { name: "Tonact 10/20", price: "₹55-100" },
+                    { name: "Lipitor 10/20", price: "₹50-90" }
                 ]
             },
             {
@@ -1381,12 +2109,12 @@
                 generic: "Rosuvastatin",
                 category: "heart",
                 usage: "Reduces cholesterol levels",
-                priceRange: "₹60-150 per strip",
+                priceRange: "₹90-200 per strip (10mg: ₹90-130, 20mg: ₹140-200)",
                 alternatives: [
-                    { name: "Rosuvastatin (Generic)", price: "₹25-60" },
-                    { name: "Rosuvas", price: "₹30-68" },
-                    { name: "Crestor", price: "₹35-75" },
-                    { name: "Rosulip", price: "₹28-65" }
+                    { name: "Rosuvastatin (Generic)", price: "₹30-60" },
+                    { name: "Rosuvas 10", price: "₹75-105" },
+                    { name: "Rosulip 10", price: "₹55-85" },
+                    { name: "Crestor 10", price: "₹85-120" }
                 ]
             },
             {
@@ -1394,11 +2122,11 @@
                 generic: "Ergotamine + Caffeine + Paracetamol",
                 category: "fever-pain",
                 usage: "Treats migraine headaches",
-                priceRange: "₹40-90 per strip",
+                priceRange: "₹42-68 per strip (10 tablets)",
                 alternatives: [
-                    { name: "Migranil", price: "₹25-55" },
-                    { name: "Cafergot", price: "₹30-65" },
-                    { name: "Ergotab", price: "₹22-50" }
+                    { name: "Migranil", price: "₹30-48" },
+                    { name: "Cafergot", price: "₹35-55" },
+                    { name: "Saridon", price: "₹25-40" }
                 ]
             },
             {
@@ -1406,12 +2134,12 @@
                 generic: "Nimesulide + Paracetamol",
                 category: "fever-pain",
                 usage: "Pain relief and fever reduction",
-                priceRange: "₹20-45 per strip",
+                priceRange: "₹38-60 per strip (10 tablets)",
                 alternatives: [
-                    { name: "Nimesulide+PCM (Generic)", price: "₹10-22" },
-                    { name: "Nise Plus", price: "₹12-25" },
-                    { name: "Nicip Plus", price: "₹11-24" },
-                    { name: "Nimulid", price: "₹13-26" }
+                    { name: "Nimesulide+PCM (Generic)", price: "₹15-28" },
+                    { name: "Nise Plus", price: "₹30-45" },
+                    { name: "Nicip Plus", price: "₹28-42" },
+                    { name: "Nimulid SP", price: "₹55-80" }
                 ]
             },
             {
@@ -1419,11 +2147,11 @@
                 generic: "Herbal Liver Support",
                 category: "vitamins",
                 usage: "Supports liver health and function",
-                priceRange: "₹100-200 per bottle",
+                priceRange: "₹115-165 per bottle (100 tablets)",
                 alternatives: [
-                    { name: "Himalaya Liver Care", price: "₹60-120" },
-                    { name: "Livergen", price: "₹50-100" },
-                    { name: "Hepamerz", price: "₹80-160" }
+                    { name: "Liv 52 DS", price: "₹175-230" },
+                    { name: "Livergen", price: "₹80-120" },
+                    { name: "Hepamerz", price: "₹250-380" }
                 ]
             },
             {
@@ -1431,12 +2159,12 @@
                 generic: "Povidone Iodine",
                 category: "skin",
                 usage: "Antiseptic for cuts, wounds, skin infections",
-                priceRange: "₹40-80 per bottle",
+                priceRange: "₹50-110 per bottle (100ml solution)",
                 alternatives: [
-                    { name: "Povidone Iodine (Generic)", price: "₹15-30" },
-                    { name: "Wokadine", price: "₹20-40" },
-                    { name: "Krosin", price: "₹18-35" },
-                    { name: "Biozine", price: "₹22-45" }
+                    { name: "Povidone Iodine (Generic)", price: "₹25-45" },
+                    { name: "Wokadine", price: "₹35-60" },
+                    { name: "Iodex", price: "₹30-50" },
+                    { name: "Biozine", price: "₹28-48" }
                 ]
             },
             {
@@ -1444,12 +2172,12 @@
                 generic: "Terbutaline + Bromhexine + Guaifenesin",
                 category: "cold-cough",
                 usage: "Relieves cough with mucus, chest congestion",
-                priceRange: "₹80-150 per bottle",
+                priceRange: "₹105-155 per bottle (100ml syrup)",
                 alternatives: [
-                    { name: "Ambrodil", price: "₹40-80" },
-                    { name: "Grilinctus BM", price: "₹45-85" },
-                    { name: "Asthakind", price: "₹50-90" },
-                    { name: "Kofarest", price: "₹42-82" }
+                    { name: "Ambrodil-S", price: "₹60-85" },
+                    { name: "Grilinctus BM", price: "₹70-100" },
+                    { name: "Asthakind Expectorant", price: "₹55-80" },
+                    { name: "Kofarest SF", price: "₹50-75" }
                 ]
             },
             {
@@ -1457,12 +2185,12 @@
                 generic: "Levothyroxine",
                 category: "vitamins",
                 usage: "Treats hypothyroidism (low thyroid hormone)",
-                priceRange: "₹40-90 per strip",
+                priceRange: "₹95-165 per strip (25mcg: ₹95-115, 50mcg: ₹110-140, 100mcg: ₹135-165)",
                 alternatives: [
-                    { name: "Levothyroxine (Generic)", price: "₹15-35" },
-                    { name: "Eltroxin", price: "₹18-40" },
-                    { name: "Thyrox", price: "₹20-42" },
-                    { name: "Thyroup", price: "₹16-38" }
+                    { name: "Eltroxin 50", price: "₹80-105" },
+                    { name: "Thyrox 50", price: "₹85-115" },
+                    { name: "Thyroup 50", price: "₹70-95" },
+                    { name: "Levothyroxine (Generic)", price: "₹40-70" }
                 ]
             },
             {
@@ -1470,10 +2198,10 @@
                 generic: "Amoxicillin",
                 category: "antibiotics",
                 usage: "Treats bacterial infections of ear, nose, throat, skin",
-                priceRange: "₹40-90 per strip",
+                priceRange: "₹50-85 per strip (500mg, 10 capsules)",
                 alternatives: [
-                    { name: "Amoxicillin (Generic)", price: "₹18-35" },
-                    { name: "Moxikind", price: "₹20-40" },
+                    { name: "Amoxicillin (Generic)", price: "₹20-38" },
+                    { name: "Moxikind 500", price: "₹55-80" },
                     { name: "Almox", price: "₹19-38" },
                     { name: "Wymox", price: "₹21-42" },
                     { name: "Amoxil", price: "₹22-45" }
@@ -1484,12 +2212,12 @@
                 generic: "Doxycycline",
                 category: "antibiotics",
                 usage: "Treats acne, respiratory infections, urinary infections",
-                priceRange: "₹30-80 per strip",
+                priceRange: "₹45-90 per strip (100mg, 10 capsules)",
                 alternatives: [
-                    { name: "Doxycycline (Generic)", price: "₹15-35" },
-                    { name: "Doxy-1", price: "₹18-38" },
-                    { name: "Doxt", price: "₹20-40" },
-                    { name: "Vibramycin", price: "₹25-50" }
+                    { name: "Doxycycline (Generic)", price: "₹18-35" },
+                    { name: "Doxy-1 100", price: "₹52-72" },
+                    { name: "Doxt-SL 100", price: "₹38-55" },
+                    { name: "Vibramycin 100", price: "₹60-85" }
                 ]
             },
             {
@@ -1497,12 +2225,12 @@
                 generic: "Levofloxacin",
                 category: "antibiotics",
                 usage: "Treats bacterial infections, pneumonia, sinusitis",
-                priceRange: "₹60-140 per strip",
+                priceRange: "₹80-140 per strip (500mg, 10 tablets)",
                 alternatives: [
-                    { name: "Levofloxacin (Generic)", price: "₹25-55" },
-                    { name: "Levocin", price: "₹30-60" },
-                    { name: "Levoday", price: "₹28-58" },
-                    { name: "Lquin", price: "₹32-65" }
+                    { name: "Levofloxacin (Generic)", price: "₹30-55" },
+                    { name: "Lquin 500", price: "₹75-105" },
+                    { name: "Levocin 500", price: "₹60-85" },
+                    { name: "Levoday 500", price: "₹50-75" }
                 ]
             },
             {
@@ -1510,12 +2238,12 @@
                 generic: "Metronidazole",
                 category: "antibiotics",
                 usage: "Treats bacterial and parasitic infections, dental infections",
-                priceRange: "₹20-50 per strip",
+                priceRange: "₹15-35 per strip (400mg, 10 tablets)",
                 alternatives: [
-                    { name: "Metronidazole (Generic)", price: "₹10-22" },
-                    { name: "Metrogyl", price: "₹12-25" },
-                    { name: "Flagyl", price: "₹15-30" },
-                    { name: "Metron", price: "₹11-23" }
+                    { name: "Metronidazole (Generic)", price: "₹6-14" },
+                    { name: "Metrogyl 400", price: "₹15-25" },
+                    { name: "Aristogyl 400", price: "₹12-20" },
+                    { name: "Flagyl 400", price: "₹18-30" }
                 ]
             },
             {
@@ -1716,12 +2444,12 @@
                 generic: "Ramipril",
                 category: "bp",
                 usage: "Controls high blood pressure, prevents heart attack",
-                priceRange: "₹60-140 per strip",
+                priceRange: "₹60-130 per strip (2.5mg: ₹60-80, 5mg: ₹90-130)",
                 alternatives: [
-                    { name: "Ramipril (Generic)", price: "₹25-60" },
-                    { name: "Ramipres", price: "₹30-68" },
-                    { name: "Ramistar", price: "₹28-65" },
-                    { name: "Hopace", price: "₹32-70" }
+                    { name: "Ramipril (Generic)", price: "₹18-40" },
+                    { name: "Ramipres 5", price: "₹45-70" },
+                    { name: "Ramistar 5", price: "₹40-65" },
+                    { name: "Hopace 5", price: "₹50-75" }
                 ]
             },
             {
@@ -1793,12 +2521,12 @@
                 generic: "Clopidogrel",
                 category: "heart",
                 usage: "Prevents blood clots, heart attack, stroke",
-                priceRange: "₹100-250 per strip",
+                priceRange: "₹75-165 per strip (75mg, 10 tablets)",
                 alternatives: [
-                    { name: "Clopidogrel (Generic)", price: "₹40-100" },
-                    { name: "Clopivas", price: "₹50-120" },
-                    { name: "Deplatt", price: "₹55-130" },
-                    { name: "Plagerine", price: "₹45-110" }
+                    { name: "Clopidogrel (Generic)", price: "₹20-45" },
+                    { name: "Clopivas 75", price: "₹45-70" },
+                    { name: "Deplatt 75", price: "₹50-75" },
+                    { name: "Clopilet 75", price: "₹40-65" }
                 ]
             },
             {
@@ -1856,12 +2584,12 @@
                 generic: "Teneligliptin",
                 category: "diabetes",
                 usage: "Controls blood sugar in Type 2 diabetes",
-                priceRange: "₹150-300 per strip",
+                priceRange: "₹95-180 per strip (20mg, 10 tablets)",
                 alternatives: [
-                    { name: "Teneligliptin (Generic)", price: "₹70-150" },
-                    { name: "Ziten", price: "₹80-170" },
-                    { name: "Tenelia", price: "₹75-160" },
-                    { name: "Teneliglow", price: "₹85-180" }
+                    { name: "Teneligliptin (Generic)", price: "₹40-70" },
+                    { name: "Ziten 20", price: "₹80-115" },
+                    { name: "Tenelia 20", price: "₹85-120" },
+                    { name: "Tenepure 20", price: "₹50-80" }
                 ]
             },
             {
@@ -1869,12 +2597,12 @@
                 generic: "Omeprazole",
                 category: "acidity",
                 usage: "Treats acidity, GERD, stomach ulcers",
-                priceRange: "₹40-90 per strip",
+                priceRange: "₹55-95 per strip (20mg, 10 capsules)",
                 alternatives: [
-                    { name: "Omeprazole (Generic)", price: "₹15-35" },
-                    { name: "Omez", price: "₹20-45" },
-                    { name: "Losec", price: "₹25-50" },
-                    { name: "Omecar", price: "₹18-40" }
+                    { name: "Omeprazole (Generic)", price: "₹20-38" },
+                    { name: "Omez D", price: "₹65-92" },
+                    { name: "Ocid 20", price: "₹45-68" },
+                    { name: "Omecar 20", price: "₹35-55" }
                 ]
             },
             {
@@ -1882,12 +2610,12 @@
                 generic: "Domperidone",
                 category: "acidity",
                 usage: "Treats nausea, vomiting, bloating",
-                priceRange: "₹30-70 per strip",
+                priceRange: "₹35-65 per strip (10mg, 10 tablets)",
                 alternatives: [
-                    { name: "Domperidone (Generic)", price: "₹12-28" },
-                    { name: "Vomistop", price: "₹15-32" },
-                    { name: "Domstal", price: "₹18-35" },
-                    { name: "Motinorm", price: "₹14-30" }
+                    { name: "Domperidone (Generic)", price: "₹10-22" },
+                    { name: "Domstal 10", price: "₹22-38" },
+                    { name: "Vomistop 10", price: "₹18-32" },
+                    { name: "Motinorm 10", price: "₹20-35" }
                 ]
             },
             {
@@ -2416,7 +3144,7 @@
                 generic: "Phytomenadione (Vitamin K1)",
                 category: "vitamins",
                 usage: "Treats vitamin K deficiency, prevents bleeding",
-                priceRange: "₹30-80 per strip",
+                priceRange: "₹30-80 per strip (tablets) / per ampoule (injection)",
                 alternatives: [
                     { name: "Vitamin K (Generic)", price: "₹15-35" },
                     { name: "Aquamephyton", price: "₹18-40" },
@@ -2725,7 +3453,7 @@
                 generic: "Olopatadine",
                 category: "cold-cough",
                 usage: "Treats allergic conjunctivitis, allergic rhinitis",
-                priceRange: "₹100-250 per strip",
+                priceRange: "₹100-250 per bottle (eye drops) / per strip (tablets)",
                 alternatives: [
                     { name: "Olopatadine (Generic)", price: "₹45-110" },
                     { name: "Olopat", price: "₹55-130" },
@@ -3693,7 +4421,7 @@
                 generic: "Cholecalciferol (Vitamin D3)",
                 category: "vitamins",
                 usage: "Treats vitamin D deficiency, strengthens bones",
-                priceRange: "₹100-250 per sachet/strip",
+                priceRange: "₹100-250 per sachet (60000 IU)",
                 nppaPrice: "₹8.82 per 60000 IU sachet",
                 nppaNote: "60000 IU sachet: ₹8.82",
                 alternatives: [
@@ -3832,6 +4560,11 @@
         function filterAndDisplay() {
             let filtered = medicines;
 
+            // Filter by bookmarks
+            if (showOnlyBookmarks) {
+                filtered = filtered.filter(med => bookmarks.includes(med.brand));
+            }
+
             // Filter by category
             if (currentCategory !== 'all') {
                 filtered = filtered.filter(med => med.category === currentCategory);
@@ -3857,7 +4590,8 @@
             }
 
             // Update count
-            resultsCount.textContent = `Showing ${filtered.length} medicine${filtered.length !== 1 ? 's' : ''}`;
+            const label = showOnlyBookmarks ? 'saved' : '';
+            resultsCount.textContent = `Showing ${filtered.length} ${label} medicine${filtered.length !== 1 ? 's' : ''}`;
 
             displayMedicines(filtered);
         }
@@ -3877,9 +4611,20 @@
                     `${savings.percent > 0 ? `🎉 Save up to ${savings.percent}%!\n` : ''}` +
                     `\n🔗 Find more alternatives at: https://generic-med.org`
                 );
+                const isBookmarked = bookmarks.includes(med.brand);
+                const isCompared = compareList.includes(med.brand);
+                const fb = feedbackData[med.brand] || { up: 0, down: 0, voted: '' };
+                const genericEncoded = encodeURIComponent(med.generic);
+                const genericDash = encodeURIComponent(med.generic.toLowerCase().replace(/ /g, '-'));
 
                 return `
                 <div class="medicine-card">
+                    <button class="bookmark-btn ${isBookmarked ? 'bookmarked' : ''}" onclick="toggleBookmark('${med.brand.replace(/'/g, "\\'")}')" title="${isBookmarked ? 'Remove from Saved' : 'Save Medicine'}">
+                        ${isBookmarked ? '⭐' : '☆'}
+                    </button>
+                    <button class="compare-checkbox ${isCompared ? 'selected' : ''}" onclick="toggleCompare('${med.brand.replace(/'/g, "\\'")}')" title="Add to comparison">
+                        ${isCompared ? '✓' : '⚖️'}
+                    </button>
                     <div class="category-tag">${getCategoryName(med.category)}</div>
                     <div class="brand-name">${med.brand}</div>
                     <div class="generic-name">Generic: ${med.generic}</div>
@@ -3889,7 +4634,7 @@
                     ${savings.percent > 0 ? `
                     <div class="savings-box">
                         <div class="savings-amount">Save up to ${savings.percent}% | ₹${savings.perYear}/year</div>
-                        <div class="savings-label">💡 Switch to generic & save ₹${savings.perStrip} per strip (₹${savings.perYear} per year)</div>
+                        <div class="savings-label">💡 Switch to generic & save ₹${savings.perStrip} per purchase (₹${savings.perYear} per year approx.)</div>
                     </div>
                     ` : ''}
 
@@ -3905,25 +4650,34 @@
                         <div class="alternatives-title">💰 Cheaper Alternatives:</div>
                         ${med.alternatives.map(alt => `
                             <div class="alternative-item">
-                                <span class="alt-name">${alt.name}</span>
+                                <a href="https://www.1mg.com/search/all?name=${encodeURIComponent(alt.name.replace(/\s*\d+\s*$/, '').replace(/\s*\(.*?\)\s*$/, ''))}" target="_blank" class="alt-name alt-link">${alt.name}</a>
                                 <span class="alt-price">${alt.price}</span>
                             </div>
                         `).join('')}
                     </div>
 
                     <div class="card-actions">
-                        <a href="https://www.1mg.com/search/all?name=${encodeURIComponent(med.generic)}" target="_blank" class="pharmacy-btn btn-1mg">
-                            1mg
-                        </a>
-                        <a href="https://www.apollopharmacy.in/search-medicines/${encodeURIComponent(med.generic.toLowerCase().replace(/ /g, '-'))}" target="_blank" class="pharmacy-btn btn-netmeds">
-                            Apollo
-                        </a>
-                        <a href="https://pharmeasy.in/search/all?name=${encodeURIComponent(med.generic)}" target="_blank" class="pharmacy-btn btn-pharmeasy">
-                            PharmEasy
-                        </a>
-                        <a href="https://wa.me/?text=${whatsappText}" target="_blank" class="btn-whatsapp">
-                            📱 Share
-                        </a>
+                        <a href="https://www.1mg.com/search/all?name=${genericEncoded}" target="_blank" class="pharmacy-btn btn-1mg">1mg</a>
+                        <a href="https://www.apollopharmacy.in/search-medicines/${genericDash}" target="_blank" class="pharmacy-btn btn-netmeds">Apollo</a>
+                        <a href="https://pharmeasy.in/search/all?name=${genericEncoded}" target="_blank" class="pharmacy-btn btn-pharmeasy">PharmEasy</a>
+                        <a href="https://wa.me/?text=${whatsappText}" target="_blank" class="btn-whatsapp">📱 Share</a>
+                        <button class="btn-qr" onclick="showQR('${med.brand.replace(/'/g, "\\'")}', '${med.generic.replace(/'/g, "\\'")}')">QR</button>
+                    </div>
+                    <button class="more-pharmacies-toggle" onclick="this.nextElementSibling.classList.toggle('show'); this.textContent = this.nextElementSibling.classList.contains('show') ? '▲ Less pharmacies' : '▼ More pharmacies (6+)';">▼ More pharmacies (6+)</button>
+                    <div class="extra-pharmacies">
+                        <a href="https://www.netmeds.com/catalogsearch/result?q=${genericEncoded}" target="_blank" class="pharmacy-btn btn-netmeds-actual">Netmeds</a>
+                        <a href="https://www.medplusmart.com/searchProduct.do?searchTerm=${genericEncoded}" target="_blank" class="pharmacy-btn btn-medplus">MedPlus</a>
+                        <a href="https://www.flipkart.com/search?q=${genericEncoded}+medicine" target="_blank" class="pharmacy-btn btn-flipkart">Flipkart Health+</a>
+                        <a href="https://www.amazon.in/s?k=${genericEncoded}+medicine" target="_blank" class="pharmacy-btn btn-amazon">Amazon Pharmacy</a>
+                        <a href="https://www.truemeds.in/search?q=${genericEncoded}" target="_blank" class="pharmacy-btn btn-truemeds">Truemeds</a>
+                        <a href="https://janaushadhisugam.co.in/ProductList" target="_blank" class="pharmacy-btn btn-janaushadhi">Jan Aushadhi</a>
+                    </div>
+
+                    <div class="feedback-row">
+                        <span>Was this helpful?</span>
+                        <button class="feedback-btn ${fb.voted === 'up' ? 'voted' : ''}" onclick="voteFeedback('${med.brand.replace(/'/g, "\\'")}', 'up')">👍 ${fb.up}</button>
+                        <button class="feedback-btn ${fb.voted === 'down' ? 'voted' : ''}" onclick="voteFeedback('${med.brand.replace(/'/g, "\\'")}', 'down')">👎 ${fb.down}</button>
+                        <button class="reminder-btn" onclick="openReminder('${med.brand.replace(/'/g, "\\'")}')">⏰ Reminder</button>
                     </div>
                 </div>
             `}).join('');
@@ -3945,6 +4699,599 @@
                 'vitamins': 'Vitamins'
             };
             return names[category] || category;
+        }
+
+        // ===== BOOKMARK FUNCTIONS =====
+        function toggleBookmark(brand) {
+            const idx = bookmarks.indexOf(brand);
+            if (idx > -1) {
+                bookmarks.splice(idx, 1);
+            } else {
+                bookmarks.push(brand);
+            }
+            localStorage.setItem('medBookmarks', JSON.stringify(bookmarks));
+            filterAndDisplay();
+        }
+
+        document.getElementById('bookmarkFilterBtn').addEventListener('click', function() {
+            showOnlyBookmarks = !showOnlyBookmarks;
+            this.classList.toggle('active', showOnlyBookmarks);
+            this.textContent = showOnlyBookmarks ? '⭐ Show All' : '⭐ Saved';
+            filterAndDisplay();
+        });
+
+        // ===== FEEDBACK FUNCTIONS =====
+        function voteFeedback(brand, type) {
+            if (!feedbackData[brand]) {
+                feedbackData[brand] = { up: 0, down: 0, voted: '' };
+            }
+            const fb = feedbackData[brand];
+            if (fb.voted === type) return; // already voted same
+            if (fb.voted) {
+                fb[fb.voted]--; // remove previous vote
+            }
+            fb[type]++;
+            fb.voted = type;
+            feedbackData[brand] = fb;
+            localStorage.setItem('medFeedback', JSON.stringify(feedbackData));
+            filterAndDisplay();
+        }
+
+        // ===== REQUEST MEDICINE =====
+        document.getElementById('requestMedBtn').addEventListener('click', () => {
+            document.getElementById('requestModal').classList.add('show');
+        });
+
+        document.getElementById('requestForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'Accept': 'application/json' }
+            }).then(() => {
+                this.style.display = 'none';
+                document.getElementById('requestSuccess').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('requestModal').classList.remove('show');
+                    this.style.display = 'block';
+                    this.reset();
+                    document.getElementById('requestSuccess').style.display = 'none';
+                }, 2500);
+            }).catch(() => {
+                alert('Submitted! We will review your request soon.');
+                document.getElementById('requestModal').classList.remove('show');
+                this.reset();
+            });
+        });
+
+        // Close modals on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) this.classList.remove('show');
+            });
+        });
+
+        // ===== COMPARE FUNCTIONS =====
+        function toggleCompare(brand) {
+            const idx = compareList.indexOf(brand);
+            if (idx > -1) {
+                compareList.splice(idx, 1);
+            } else {
+                if (compareList.length >= 3) {
+                    alert('You can compare up to 3 medicines at a time.');
+                    return;
+                }
+                compareList.push(brand);
+            }
+            updateCompareBar();
+            filterAndDisplay();
+        }
+
+        function updateCompareBar() {
+            const bar = document.getElementById('compareBar');
+            const text = document.getElementById('compareBarText');
+            if (compareList.length > 0) {
+                bar.classList.add('show');
+                text.textContent = `${compareList.length} medicine${compareList.length > 1 ? 's' : ''} selected: ${compareList.join(', ')}`;
+            } else {
+                bar.classList.remove('show');
+            }
+        }
+
+        function clearComparison() {
+            compareList = [];
+            updateCompareBar();
+            filterAndDisplay();
+        }
+
+        function showComparison() {
+            if (compareList.length < 2) {
+                alert('Select at least 2 medicines to compare.');
+                return;
+            }
+            const meds = compareList.map(brand => medicines.find(m => m.brand === brand)).filter(Boolean);
+            let html = '<table class="compare-table"><thead><tr><th>Feature</th>';
+            meds.forEach(m => { html += `<th>${m.brand}</th>`; });
+            html += '</tr></thead><tbody>';
+
+            const rows = [
+                ['Generic Name', m => m.generic],
+                ['Category', m => getCategoryName(m.category)],
+                ['Usage', m => m.usage],
+                ['Brand Price', m => m.priceRange],
+                ['Cheapest Alternative', m => m.alternatives[0] ? `${m.alternatives[0].name} (${m.alternatives[0].price})` : 'N/A'],
+                ['Savings %', m => { const s = calculateSavings(m); return s.percent > 0 ? `${s.percent}%` : 'N/A'; }],
+                ['NPPA Price', m => m.nppaPrice || 'Not available'],
+                ['Alternatives Count', m => m.alternatives.length.toString()]
+            ];
+
+            rows.forEach(([label, fn]) => {
+                html += `<tr><td><strong>${label}</strong></td>`;
+                meds.forEach(m => { html += `<td>${fn(m)}</td>`; });
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+
+            document.getElementById('compareTableContainer').innerHTML = html;
+            document.getElementById('compareModal').classList.add('show');
+        }
+
+        // ===== VOICE SEARCH =====
+        const voiceBtn = document.getElementById('voiceBtn');
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-IN';
+            recognition.interimResults = false;
+
+            voiceBtn.addEventListener('click', () => {
+                if (voiceBtn.classList.contains('listening')) {
+                    recognition.stop();
+                    return;
+                }
+                voiceBtn.classList.add('listening');
+                voiceBtn.textContent = '🔴';
+                recognition.start();
+            });
+
+            recognition.onresult = (e) => {
+                const transcript = e.results[0][0].transcript;
+                searchInput.value = transcript;
+                searchTerm = transcript.toLowerCase();
+                filterAndDisplay();
+            };
+
+            recognition.onend = () => {
+                voiceBtn.classList.remove('listening');
+                voiceBtn.textContent = '🎤';
+            };
+
+            recognition.onerror = () => {
+                voiceBtn.classList.remove('listening');
+                voiceBtn.textContent = '🎤';
+            };
+        } else {
+            voiceBtn.style.display = 'none';
+        }
+
+        // ===== OVERPAY COUNTER ANIMATION =====
+        function animateCounter() {
+            const el = document.getElementById('overpayCounter');
+            const target = 150000; // ₹1,50,000 crore
+            const duration = 2000;
+            const start = Date.now();
+            const step = () => {
+                const elapsed = Date.now() - start;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3); // ease out cubic
+                const current = Math.floor(target * eased);
+                el.textContent = `₹${current.toLocaleString('en-IN')} Crore+`;
+                if (progress < 1) requestAnimationFrame(step);
+            };
+            step();
+        }
+
+        // Animate counter when visible
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounter();
+                    counterObserver.disconnect();
+                }
+            });
+        });
+        const counterEl = document.getElementById('overpayCounter');
+        if (counterEl) counterObserver.observe(counterEl.parentElement);
+
+        // ===== QR CODE =====
+        function showQR(brand, generic) {
+            const container = document.getElementById('qrCodeContainer');
+            container.innerHTML = '';
+            document.getElementById('qrMedName').textContent = `${brand} (${generic})`;
+            const url = `https://generic-med.org/?search=${encodeURIComponent(brand)}`;
+            if (typeof QRCode !== 'undefined') {
+                new QRCode(container, {
+                    text: url,
+                    width: 200,
+                    height: 200,
+                    colorDark: '#667eea',
+                    colorLight: '#ffffff'
+                });
+            } else {
+                container.innerHTML = '<p style="color:#999;">QR library loading... Please try again.</p>';
+            }
+            document.getElementById('qrModal').classList.add('show');
+        }
+
+        // ===== MEDICINE REMINDER =====
+        let reminders = JSON.parse(localStorage.getItem('medReminders') || '[]');
+        let currentReminderMed = '';
+
+        function openReminder(brand) {
+            currentReminderMed = brand;
+            document.getElementById('reminderMedName').textContent = brand;
+            showExistingReminders();
+            document.getElementById('reminderModal').classList.add('show');
+        }
+
+        function saveReminder() {
+            if ('Notification' in window) {
+                Notification.requestPermission().then(perm => {
+                    if (perm === 'granted') {
+                        const time = document.getElementById('reminderTime').value;
+                        const repeat = document.getElementById('reminderRepeat').value;
+                        const reminder = {
+                            medicine: currentReminderMed,
+                            time: time,
+                            repeat: repeat,
+                            id: Date.now()
+                        };
+                        reminders.push(reminder);
+                        localStorage.setItem('medReminders', JSON.stringify(reminders));
+                        scheduleReminder(reminder);
+                        showExistingReminders();
+                        alert(`Reminder set for ${currentReminderMed} at ${time}!`);
+                    } else {
+                        alert('Please allow notifications to set reminders.');
+                    }
+                });
+            } else {
+                alert('Your browser does not support notifications.');
+            }
+        }
+
+        function deleteReminder(id) {
+            reminders = reminders.filter(r => r.id !== id);
+            localStorage.setItem('medReminders', JSON.stringify(reminders));
+            showExistingReminders();
+        }
+
+        function showExistingReminders() {
+            const container = document.getElementById('remindersList');
+            const medReminders = reminders.filter(r => r.medicine === currentReminderMed);
+            if (medReminders.length === 0) {
+                container.innerHTML = '<p style="color:#999;font-size:13px;">No reminders set for this medicine.</p>';
+                return;
+            }
+            container.innerHTML = '<h4 style="margin-bottom:10px;">Active Reminders:</h4>' +
+                medReminders.map(r => `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:#f0f4ff;border-radius:6px;margin-bottom:6px;">
+                        <span>⏰ ${r.time} - ${r.repeat}</span>
+                        <button onclick="deleteReminder(${r.id})" style="background:#ff4444;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;">Remove</button>
+                    </div>
+                `).join('');
+        }
+
+        function scheduleReminder(reminder) {
+            const [hours, minutes] = reminder.time.split(':').map(Number);
+            const now = new Date();
+            let next = new Date();
+            next.setHours(hours, minutes, 0, 0);
+            if (next <= now) next.setDate(next.getDate() + 1);
+            const delay = next - now;
+            setTimeout(() => {
+                new Notification(`💊 Medicine Reminder`, {
+                    body: `Time to take ${reminder.medicine}`,
+                    icon: '💊'
+                });
+                if (reminder.repeat !== 'once') {
+                    scheduleReminder(reminder);
+                }
+            }, delay);
+        }
+
+        // Schedule existing reminders on load
+        reminders.forEach(r => scheduleReminder(r));
+
+        // ===== HINDI LANGUAGE TOGGLE =====
+        const hindiDict = {
+            'Generic Medicine Finder': 'जेनेरिक दवा खोजक',
+            'Save up to 90% on medicines - Search 235+ medicines for cheaper generic alternatives instantly': 'दवाओं पर 90% तक बचाएं - 235+ दवाओं के सस्ते जेनेरिक विकल्प तुरंत खोजें',
+            'Did you know?': 'क्या आप जानते हैं?',
+            'The same medicine with the same composition costs 10-20 times more when branded! Find cheaper alternatives below.': 'एक ही रचना वाली दवा ब्रांडेड होने पर 10-20 गुना अधिक महंगी होती है! नीचे सस्ते विकल्प खोजें।',
+            'Search 235+ medicines by brand name, generic name, or usage...': '235+ दवाओं को ब्रांड नाम, जेनेरिक नाम, या उपयोग से खोजें...',
+            'All Medicines': 'सभी दवाइयां',
+            'Fever & Pain': 'बुखार और दर्द',
+            'Antibiotics': 'एंटीबायोटिक्स',
+            'Diabetes': 'मधुमेह',
+            'Blood Pressure': 'रक्तचाप',
+            'Acidity': 'एसिडिटी',
+            'Cold & Cough': 'सर्दी और खांसी',
+            'Mental Health': 'मानसिक स्वास्थ्य',
+            'Skin Care': 'त्वचा की देखभाल',
+            'Eye & Ear': 'आंख और कान',
+            "Women's Health": 'महिला स्वास्थ्य',
+            'Heart': 'हृदय',
+            'Vitamins': 'विटामिन',
+            'Sort by:': 'क्रमबद्ध करें:',
+            'Default': 'डिफ़ॉल्ट',
+            'Name (A-Z)': 'नाम (अ-ज्ञ)',
+            'Name (Z-A)': 'नाम (ज्ञ-अ)',
+            'Category': 'श्रेणी',
+            'Cheaper Alternatives:': 'सस्ते विकल्प:',
+            'Was this helpful?': 'क्या यह मददगार था?',
+            'Typical Cost:': 'सामान्य कीमत:',
+            'Generic:': 'जेनेरिक:',
+            'Save': 'बचत',
+            'Disclaimer:': 'अस्वीकरण:',
+            'Always consult your doctor before switching medicines. This website is for informational purposes only.': 'दवाइयां बदलने से पहले हमेशा अपने डॉक्टर से परामर्श करें। यह वेबसाइट केवल सूचना के उद्देश्य से है।',
+            'Estimated Amount Indians Overpay on Branded Medicines': 'ब्रांडेड दवाओं पर भारतीयों का अनुमानित अतिरिक्त खर्च',
+            'Every year, Indians spend ~₹1.5 lakh crore extra on branded medicines when generic alternatives exist': 'हर साल भारतीय ब्रांडेड दवाओं पर ~₹1.5 लाख करोड़ अतिरिक्त खर्च करते हैं जबकि जेनेरिक विकल्प मौजूद हैं',
+            'Saved': 'सहेजी गई',
+            'Request Medicine': 'दवा का अनुरोध करें'
+        };
+
+        let isHindi = false;
+        const langToggle = document.getElementById('langToggle');
+
+        langToggle.addEventListener('click', () => {
+            isHindi = !isHindi;
+            langToggle.textContent = isHindi ? 'English' : 'हिंदी';
+            translatePage();
+        });
+
+        function translatePage() {
+            // Translate header
+            const h1 = document.querySelector('h1');
+            h1.textContent = isHindi ? '💊 ' + hindiDict['Generic Medicine Finder'] : '💊 Generic Medicine Finder';
+
+            const tagline = document.querySelector('.tagline');
+            tagline.textContent = isHindi ? hindiDict['Save up to 90% on medicines - Search 235+ medicines for cheaper generic alternatives instantly'] : 'Save up to 90% on medicines - Search 235+ medicines for cheaper generic alternatives instantly';
+
+            // Translate search placeholder
+            searchInput.placeholder = isHindi ? hindiDict['Search 235+ medicines by brand name, generic name, or usage...'] : 'Search 235+ medicines by brand name, generic name, or usage...';
+
+            // Translate info banner
+            const banner = document.querySelector('.info-banner');
+            if (isHindi) {
+                banner.innerHTML = `<strong>💡 ${hindiDict['Did you know?']}</strong> ${hindiDict['The same medicine with the same composition costs 10-20 times more when branded! Find cheaper alternatives below.']}`;
+            } else {
+                banner.innerHTML = `<strong>💡 Did you know?</strong> The same medicine with the same composition costs 10-20 times more when branded! Find cheaper alternatives below.`;
+            }
+
+            // Translate category buttons
+            categoryButtons.forEach(btn => {
+                const eng = Object.entries(hindiDict).find(([k,v]) => v === btn.textContent || k === btn.textContent);
+                if (isHindi && hindiDict[btn.textContent]) {
+                    btn.dataset.eng = btn.textContent;
+                    btn.textContent = hindiDict[btn.textContent];
+                } else if (!isHindi && btn.dataset.eng) {
+                    btn.textContent = btn.dataset.eng;
+                }
+            });
+
+            // Translate counter
+            const counterLabel = document.querySelector('.counter-label');
+            const counterSub = document.querySelector('.counter-sub');
+            if (counterLabel) counterLabel.textContent = isHindi ? '🇮🇳 ' + hindiDict['Estimated Amount Indians Overpay on Branded Medicines'] : '🇮🇳 Estimated Amount Indians Overpay on Branded Medicines';
+            if (counterSub) counterSub.textContent = isHindi ? hindiDict['Every year, Indians spend ~₹1.5 lakh crore extra on branded medicines when generic alternatives exist'] : 'Every year, Indians spend ~₹1.5 lakh crore extra on branded medicines when generic alternatives exist';
+
+            // Translate sort label
+            const sortLabel = document.querySelector('.sort-filter-bar label');
+            if (sortLabel) sortLabel.textContent = isHindi ? 'क्रमबद्ध करें:' : 'Sort by:';
+
+            // Translate bookmark btn
+            const bmBtn = document.getElementById('bookmarkFilterBtn');
+            if (bmBtn) bmBtn.textContent = isHindi ? (showOnlyBookmarks ? '⭐ सभी दिखाएं' : '⭐ सहेजी गई') : (showOnlyBookmarks ? '⭐ Show All' : '⭐ Saved');
+            const reqBtn = document.getElementById('requestMedBtn');
+            if (reqBtn) reqBtn.textContent = isHindi ? '➕ दवा का अनुरोध करें' : '➕ Request Medicine';
+
+            // Disclaimer
+            const disclaimer = document.querySelector('footer p:first-child');
+            if (disclaimer) {
+                disclaimer.innerHTML = isHindi
+                    ? `⚠️ <strong>${hindiDict['Disclaimer:']}</strong> ${hindiDict['Always consult your doctor before switching medicines. This website is for informational purposes only.']}`
+                    : `⚠️ <strong>Disclaimer:</strong> Always consult your doctor before switching medicines. This website is for informational purposes only.`;
+            }
+        }
+
+        // ===== HANDLE URL SEARCH PARAMS =====
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlSearch = urlParams.get('search');
+        if (urlSearch) {
+            searchInput.value = urlSearch;
+            searchTerm = urlSearch.toLowerCase();
+            filterAndDisplay();
+        }
+
+        // ===== FAMILY MEDICINE CABINET =====
+        let familyCabinet = JSON.parse(localStorage.getItem('familyCabinet') || '{}');
+
+        document.getElementById('cabinetBtn').addEventListener('click', toggleCabinet);
+        document.getElementById('cabinetOverlay').addEventListener('click', toggleCabinet);
+
+        function toggleCabinet() {
+            document.getElementById('cabinetPanel').classList.toggle('open');
+            document.getElementById('cabinetOverlay').classList.toggle('show');
+            renderCabinet();
+        }
+
+        function addMember() {
+            const input = document.getElementById('newMemberName');
+            const name = input.value.trim();
+            if (!name) return;
+            if (!familyCabinet[name]) {
+                familyCabinet[name] = [];
+                saveCabinet();
+                renderCabinet();
+            }
+            input.value = '';
+        }
+
+        function addMedToMember(member, brand) {
+            if (!familyCabinet[member]) return;
+            if (!familyCabinet[member].includes(brand)) {
+                familyCabinet[member].push(brand);
+                saveCabinet();
+                renderCabinet();
+            }
+        }
+
+        function removeMedFromMember(member, brand) {
+            if (!familyCabinet[member]) return;
+            familyCabinet[member] = familyCabinet[member].filter(m => m !== brand);
+            saveCabinet();
+            renderCabinet();
+        }
+
+        function deleteMember(name) {
+            delete familyCabinet[name];
+            saveCabinet();
+            renderCabinet();
+        }
+
+        function saveCabinet() {
+            localStorage.setItem('familyCabinet', JSON.stringify(familyCabinet));
+            updateCabinetBadge();
+        }
+
+        function updateCabinetBadge() {
+            const total = Object.values(familyCabinet).reduce((sum, meds) => sum + meds.length, 0);
+            const badge = document.getElementById('cabinetBadge');
+            if (total > 0) {
+                badge.textContent = total;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+        updateCabinetBadge();
+
+        function renderCabinet() {
+            const container = document.getElementById('cabinetMembers');
+            const members = Object.keys(familyCabinet);
+            if (members.length === 0) {
+                container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">No family members added yet.<br>Add a member and then bookmark medicines for them!</p>';
+                return;
+            }
+            container.innerHTML = members.map(name => `
+                <div class="member-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <h4>👤 ${name}</h4>
+                        <button class="remove-btn" onclick="deleteMember('${name.replace(/'/g, "\\'")}')">Remove</button>
+                    </div>
+                    ${familyCabinet[name].length === 0 ?
+                        '<p style="color:#999;font-size:12px;">No medicines added. Use the ⭐ button on medicine cards to save.</p>' :
+                        familyCabinet[name].map(med => `
+                            <div class="member-med">
+                                <span>${med}</span>
+                                <button class="remove-btn" onclick="removeMedFromMember('${name.replace(/'/g, "\\'")}', '${med.replace(/'/g, "\\'")}')">×</button>
+                            </div>
+                        `).join('')
+                    }
+                    <select onchange="if(this.value){addMedToMember('${name.replace(/'/g, "\\'")}',this.value);this.value='';}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;margin-top:8px;font-size:12px;">
+                        <option value="">+ Add medicine...</option>
+                        ${medicines.map(m => `<option value="${m.brand}">${m.brand} (${m.generic})</option>`).join('')}
+                    </select>
+                </div>
+            `).join('');
+        }
+
+        // ===== PRESCRIPTION SCANNER =====
+        document.getElementById('scanBtn').addEventListener('click', () => {
+            document.getElementById('scanModal').classList.add('show');
+        });
+
+        async function processPresciption() {
+            const file = document.getElementById('prescriptionFile').files[0];
+            if (!file) {
+                alert('Please select a prescription image first.');
+                return;
+            }
+
+            const status = document.getElementById('scanStatus');
+            const results = document.getElementById('scanResults');
+            const btn = document.getElementById('scanProcessBtn');
+
+            status.style.display = 'block';
+            status.innerHTML = '⏳ Loading OCR engine...';
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+            results.style.display = 'none';
+
+            try {
+                await loadTesseract();
+                status.innerHTML = '🔍 Reading your prescription...';
+
+                const worker = await Tesseract.createWorker('eng');
+                const { data: { text } } = await worker.recognize(file);
+                await worker.terminate();
+
+                status.innerHTML = '✅ Scan complete! Finding matching medicines...';
+
+                // Extract words and try to match with medicine database
+                const words = text.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 3);
+                const matches = [];
+
+                medicines.forEach(med => {
+                    const brandLower = med.brand.toLowerCase();
+                    const genericLower = med.generic.toLowerCase();
+                    const score = words.reduce((s, w) => {
+                        if (brandLower.includes(w) || w.includes(brandLower)) s += 3;
+                        if (genericLower.includes(w) || w.includes(genericLower)) s += 2;
+                        return s;
+                    }, 0);
+                    if (score > 0) matches.push({ med, score });
+                });
+
+                matches.sort((a, b) => b.score - a.score);
+                const topMatches = matches.slice(0, 10);
+
+                if (topMatches.length === 0) {
+                    results.innerHTML = '<div class="scan-results"><h4>No matches found</h4><p style="font-size:13px;color:#888;">We could not find matching medicines in our database. The prescription might contain medicines not yet in our system, or the image quality may need improvement.</p></div>';
+                } else {
+                    results.innerHTML = `
+                        <div class="scan-results">
+                            <h4>Found ${topMatches.length} possible match${topMatches.length > 1 ? 'es' : ''}:</h4>
+                            ${topMatches.map(m => `
+                                <div class="scan-match" onclick="document.getElementById('scanModal').classList.remove('show');searchInput.value='${m.med.brand}';searchTerm='${m.med.brand.toLowerCase()}';filterAndDisplay();">
+                                    <strong>${m.med.brand}</strong> (${m.med.generic})<br>
+                                    <small style="opacity:0.7;">${m.med.usage}</small>
+                                </div>
+                            `).join('')}
+                            <p style="font-size:11px;color:#ff6b6b;margin-top:10px;">⚠️ These are AI-detected matches. Always verify with your doctor before taking any medicine.</p>
+                        </div>
+                    `;
+                }
+                results.style.display = 'block';
+
+            } catch (err) {
+                status.innerHTML = '❌ Error processing image. Please try again with a clearer photo.';
+                console.error(err);
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Scan & Find Medicines';
+        }
+
+        // ===== PWA SERVICE WORKER =====
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('SW registered'))
+                    .catch(err => console.log('SW registration failed'));
+            });
         }
     </script>
 </body>
