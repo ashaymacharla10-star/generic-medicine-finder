@@ -5125,37 +5125,45 @@
         }
 
         function saveReminder() {
-            if ('Notification' in window) {
-                Notification.requestPermission().then(perm => {
-                    if (perm === 'granted') {
-                        const time = document.getElementById('reminderTime').value;
-                        const repeat = document.getElementById('reminderRepeat').value;
-                        const reminder = {
-                            medicine: currentReminderMed,
-                            time: time,
-                            repeat: repeat,
-                            id: Date.now()
-                        };
-                        reminders.push(reminder);
-                        localStorage.setItem('medReminders', JSON.stringify(reminders));
-                        scheduleReminder(reminder);
-                        showExistingReminders();
-                        filterAndDisplay(); // refresh cards to show "Active" state
-                        alert(`Reminder set for ${currentReminderMed} at ${time}!`);
-                    } else {
-                        alert('Please allow notifications to set reminders.');
-                    }
-                });
-            } else {
+            if (!('Notification' in window)) {
                 alert('Your browser does not support notifications.');
+                return;
             }
+            Notification.requestPermission().then(perm => {
+                if (perm === 'granted') {
+                    const time = document.getElementById('reminderTime').value;
+                    const repeat = document.getElementById('reminderRepeat').value;
+                    const reminder = {
+                        medicine: currentReminderMed,
+                        time: time,
+                        repeat: repeat,
+                        id: Date.now()
+                    };
+                    reminders.push(reminder);
+                    localStorage.setItem('medReminders', JSON.stringify(reminders));
+                    scheduleReminder(reminder);
+                    showExistingReminders();
+                    filterAndDisplay();
+
+                    // Show confirmation notification immediately
+                    new Notification('✅ Reminder Set!', {
+                        body: `${currentReminderMed} - ${repeat === 'daily' ? 'Every day' : repeat === 'twice' ? 'Twice daily' : 'Three times daily'} at ${time}`,
+                        icon: '💊',
+                        tag: 'reminder-confirm-' + reminder.id
+                    });
+                } else if (perm === 'denied') {
+                    alert('❌ Notifications are BLOCKED by your browser.\n\nTo fix this:\n1. Click the 🔒 lock icon in the address bar\n2. Find "Notifications" \n3. Change it to "Allow"\n4. Refresh the page and try again');
+                } else {
+                    alert('Please allow notifications when prompted to set reminders.');
+                }
+            });
         }
 
         function deleteReminder(id) {
             reminders = reminders.filter(r => r.id !== id);
             localStorage.setItem('medReminders', JSON.stringify(reminders));
             showExistingReminders();
-            filterAndDisplay(); // refresh cards to update button state
+            filterAndDisplay();
         }
 
         function showExistingReminders() {
@@ -5174,26 +5182,62 @@
                         </div>
                         <button onclick="deleteReminder(${r.id})" style="background:#ff4444;color:white;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">✕ Remove</button>
                     </div>
-                `).join('');
+                `).join('') +
+                '<p style="font-size:12px;color:#888;margin-top:8px;">⚠️ Reminders only work while this page is open in your browser.</p>';
         }
 
+        // Reminder checker - runs every 30 seconds to check if any reminder time has passed
+        let reminderTimers = {};
         function scheduleReminder(reminder) {
+            // Clear any existing timer for this reminder
+            if (reminderTimers[reminder.id]) clearTimeout(reminderTimers[reminder.id]);
+
             const [hours, minutes] = reminder.time.split(':').map(Number);
             const now = new Date();
             let next = new Date();
             next.setHours(hours, minutes, 0, 0);
             if (next <= now) next.setDate(next.getDate() + 1);
             const delay = next - now;
-            setTimeout(() => {
-                new Notification(`💊 Medicine Reminder`, {
-                    body: `Time to take ${reminder.medicine}`,
-                    icon: '💊'
-                });
+
+            reminderTimers[reminder.id] = setTimeout(() => {
+                if (Notification.permission === 'granted') {
+                    new Notification('💊 Medicine Reminder', {
+                        body: `Time to take ${reminder.medicine}!`,
+                        icon: '💊',
+                        tag: 'med-reminder-' + reminder.id,
+                        requireInteraction: true
+                    });
+                }
                 if (reminder.repeat !== 'once') {
                     scheduleReminder(reminder);
+                } else {
+                    // Remove one-time reminders after they fire
+                    reminders = reminders.filter(r => r.id !== reminder.id);
+                    localStorage.setItem('medReminders', JSON.stringify(reminders));
                 }
             }, delay);
         }
+
+        // Also check reminders every 60 seconds as a backup
+        setInterval(() => {
+            const now = new Date();
+            const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            reminders.forEach(r => {
+                if (r.time === currentTime && Notification.permission === 'granted') {
+                    // Check if we already notified in the last 2 minutes
+                    const lastNotified = localStorage.getItem('lastNotified_' + r.id);
+                    if (!lastNotified || (Date.now() - parseInt(lastNotified)) > 120000) {
+                        new Notification('💊 Medicine Reminder', {
+                            body: `Time to take ${r.medicine}!`,
+                            icon: '💊',
+                            tag: 'med-reminder-' + r.id,
+                            requireInteraction: true
+                        });
+                        localStorage.setItem('lastNotified_' + r.id, Date.now().toString());
+                    }
+                }
+            });
+        }, 60000);
 
         // Schedule existing reminders on load
         reminders.forEach(r => scheduleReminder(r));
