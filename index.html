@@ -4878,12 +4878,17 @@
                 feedbackData[brand] = { up: 0, down: 0, voted: '' };
             }
             const fb = feedbackData[brand];
-            if (fb.voted === type) return; // already voted same
-            if (fb.voted) {
-                fb[fb.voted]--; // remove previous vote
+            if (fb.voted === type) {
+                // Toggle off - clicking same button again removes the vote
+                fb[type]--;
+                fb.voted = '';
+            } else {
+                if (fb.voted) {
+                    fb[fb.voted]--; // remove previous vote
+                }
+                fb[type]++;
+                fb.voted = type;
             }
-            fb[type]++;
-            fb.voted = type;
             feedbackData[brand] = fb;
             localStorage.setItem('medFeedback', JSON.stringify(feedbackData));
             filterAndDisplay();
