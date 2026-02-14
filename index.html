@@ -1,0 +1,3531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generic Medicine Finder - Find Cheaper Alternatives</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .search-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #searchInput {
+            flex: 1;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        #searchInput:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .category-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .category-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .category-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .results-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .medicine-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .medicine-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .brand-name {
+            font-size: 1.5em;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .generic-name {
+            background: #f0f4ff;
+            padding: 8px 15px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 15px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .usage {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .alternatives-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .alternatives-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .alternative-item {
+            background: #f9f9f9;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .alt-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .alt-price {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .price-range {
+            background: #e8f5e9;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: bold;
+            color: #27ae60;
+        }
+
+        .nppa-price-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            color: white;
+            border: 2px solid #5568d3;
+        }
+
+        .nppa-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            opacity: 0.9;
+        }
+
+        .nppa-price {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 3px;
+        }
+
+        .nppa-verified {
+            font-size: 10px;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        .pharmacy-links {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .pharmacy-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s;
+            display: block;
+        }
+
+        .btn-1mg {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-1mg:hover {
+            background: #ee5a52;
+            transform: scale(1.05);
+        }
+
+        .btn-netmeds {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .btn-netmeds:hover {
+            background: #45b7af;
+            transform: scale(1.05);
+        }
+
+        .btn-pharmeasy {
+            background: #5f27cd;
+            color: white;
+        }
+
+        .btn-pharmeasy:hover {
+            background: #341f97;
+            transform: scale(1.05);
+        }
+
+        .category-tag {
+            display: inline-block;
+            background: #764ba2;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .no-results {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        .info-banner {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+
+        .info-banner strong {
+            color: #664d03;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .results-section {
+                grid-template-columns: 1fr;
+            }
+
+            .category-filters {
+                justify-content: center;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💊 Generic Medicine Finder</h1>
+            <p class="tagline">Save up to 90% on medicines - Search 235+ medicines for cheaper generic alternatives instantly</p>
+        </header>
+
+        <div class="info-banner">
+            <strong>💡 Did you know?</strong> The same medicine with the same composition costs 10-20 times more when branded! Find cheaper alternatives below.
+        </div>
+
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search 235+ medicines by brand name, generic name, or usage...">
+            </div>
+            
+            <div class="category-filters">
+                <button class="category-btn active" data-category="all">All Medicines</button>
+                <button class="category-btn" data-category="fever-pain">Fever & Pain</button>
+                <button class="category-btn" data-category="antibiotics">Antibiotics</button>
+                <button class="category-btn" data-category="diabetes">Diabetes</button>
+                <button class="category-btn" data-category="bp">Blood Pressure</button>
+                <button class="category-btn" data-category="acidity">Acidity</button>
+                <button class="category-btn" data-category="cold-cough">Cold & Cough</button>
+                <button class="category-btn" data-category="mental-health">Mental Health</button>
+                <button class="category-btn" data-category="skin">Skin Care</button>
+                <button class="category-btn" data-category="eye-ear">Eye & Ear</button>
+                <button class="category-btn" data-category="womens-health">Women's Health</button>
+                <button class="category-btn" data-category="heart">Heart</button>
+                <button class="category-btn" data-category="vitamins">Vitamins</button>
+            </div>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <!-- Results will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <footer>
+        <p>⚠️ <strong>Disclaimer:</strong> Always consult your doctor before switching medicines. This website is for informational purposes only.</p>
+        <p style="margin-top: 10px; font-size: 0.9em;">Generic Medicine Finder - Helping people save money on healthcare</p>
+    </footer>
+
+    <script>
+        // Medicine Database
+        const medicines = [
+            {
+                brand: "Crocin",
+                generic: "Paracetamol",
+                category: "fever-pain",
+                usage: "Used for fever, headache, and body pain",
+                priceRange: "₹5-15 per strip",
+                alternatives: [
+                    { name: "Paracetamol (Generic)", price: "₹5-8" },
+                    { name: "Dolo 650", price: "₹12-15" },
+                    { name: "Calpol", price: "₹10-14" },
+                    { name: "Metacin", price: "₹6-10" },
+                    { name: "P-500", price: "₹5-8" }
+                ]
+            },
+            {
+                brand: "Dolo 650",
+                generic: "Paracetamol",
+                category: "fever-pain",
+                usage: "Used for fever, headache, and body pain",
+                priceRange: "₹5-15 per strip",
+                alternatives: [
+                    { name: "Paracetamol (Generic)", price: "₹5-8" },
+                    { name: "Crocin", price: "₹8-12" },
+                    { name: "Calpol", price: "₹10-14" },
+                    { name: "Metacin", price: "₹6-10" },
+                    { name: "P-500", price: "₹5-8" }
+                ]
+            },
+            {
+                brand: "Combiflam",
+                generic: "Ibuprofen + Paracetamol",
+                category: "fever-pain",
+                usage: "Used for severe pain, inflammation, fever",
+                priceRange: "₹15-30 per strip",
+                alternatives: [
+                    { name: "Brufen Plus", price: "₹12-20" },
+                    { name: "Ibugesic Plus", price: "₹10-18" },
+                    { name: "Advil", price: "₹15-25" },
+                    { name: "Flexon", price: "₹12-22" },
+                    { name: "Generic Ibuprofen+PCM", price: "₹8-15" }
+                ]
+            },
+            {
+                brand: "Augmentin",
+                generic: "Amoxicillin + Clavulanic Acid",
+                category: "antibiotics",
+                usage: "Antibiotic for bacterial infections, respiratory tract infections",
+                priceRange: "₹80-200 per strip",
+                alternatives: [
+                    { name: "Clavam", price: "₹60-120" },
+                    { name: "Moxclav", price: "₹55-110" },
+                    { name: "Augpen", price: "₹70-130" },
+                    { name: "Generic Amox+Clav", price: "₹40-80" },
+                    { name: "Moxikind CV", price: "₹50-100" }
+                ]
+            },
+            {
+                brand: "Azithral",
+                generic: "Azithromycin",
+                category: "antibiotics",
+                usage: "Antibiotic for respiratory infections, skin infections",
+                priceRange: "₹60-150 per strip",
+                alternatives: [
+                    { name: "Azithromycin (Generic)", price: "₹30-60" },
+                    { name: "Zady", price: "₹40-80" },
+                    { name: "Azee", price: "₹50-90" },
+                    { name: "Azithro", price: "₹35-70" },
+                    { name: "Azimax", price: "₹45-85" }
+                ]
+            },
+            {
+                brand: "Lantus",
+                generic: "Insulin Glargine",
+                category: "diabetes",
+                usage: "Long-acting insulin for diabetes management",
+                priceRange: "₹1500-2500 per vial",
+                alternatives: [
+                    { name: "Basalog", price: "₹800-1200" },
+                    { name: "Glaritus", price: "₹900-1300" },
+                    { name: "Insulin Glargine (Generic)", price: "₹700-1000" }
+                ]
+            },
+            {
+                brand: "Glycomet",
+                generic: "Metformin",
+                category: "diabetes",
+                usage: "Controls blood sugar in Type 2 diabetes",
+                priceRange: "₹30-80 per strip",
+                nppaPrice: "₹1.92-₹3.66 per tablet",
+                nppaNote: "500mg: ₹1.92 | 1000mg: ₹3.66",
+                alternatives: [
+                    { name: "Metformin (Generic)", price: "₹15-35" },
+                    { name: "Obimet", price: "₹20-45" },
+                    { name: "Glucophage", price: "₹25-50" },
+                    { name: "Metsmall", price: "₹18-40" },
+                    { name: "Bigomet", price: "₹22-48" }
+                ]
+            },
+            {
+                brand: "Telma",
+                generic: "Telmisartan",
+                category: "bp",
+                usage: "Controls high blood pressure",
+                priceRange: "₹80-180 per strip",
+                alternatives: [
+                    { name: "Telmisartan (Generic)", price: "₹40-90" },
+                    { name: "Telmikind", price: "₹45-100" },
+                    { name: "Cresar", price: "₹60-120" },
+                    { name: "Telsar", price: "₹50-110" },
+                    { name: "Telpres", price: "₹55-115" }
+                ]
+            },
+            {
+                brand: "Amlodac",
+                generic: "Amlodipine",
+                category: "bp",
+                usage: "Controls high blood pressure and chest pain",
+                priceRange: "₹30-70 per strip",
+                alternatives: [
+                    { name: "Amlodipine (Generic)", price: "₹12-30" },
+                    { name: "Amlong", price: "₹15-35" },
+                    { name: "Amlokind", price: "₹18-38" },
+                    { name: "Stamlo", price: "₹20-40" },
+                    { name: "Amlovas", price: "₹22-45" }
+                ]
+            },
+            {
+                brand: "Pantoprazole",
+                generic: "Pantoprazole",
+                category: "acidity",
+                usage: "Treats acidity, GERD, stomach ulcers",
+                priceRange: "₹30-80 per strip",
+                alternatives: [
+                    { name: "Pantoprazole (Generic)", price: "₹15-30" },
+                    { name: "Pan", price: "₹18-35" },
+                    { name: "Pantocid", price: "₹20-40" },
+                    { name: "Pent", price: "₹16-32" },
+                    { name: "Pantocar", price: "₹17-33" }
+                ]
+            },
+            {
+                brand: "Rablet",
+                generic: "Rabeprazole",
+                category: "acidity",
+                usage: "Treats acidity, heartburn, GERD",
+                priceRange: "₹40-90 per strip",
+                alternatives: [
+                    { name: "Rabeprazole (Generic)", price: "₹20-45" },
+                    { name: "Razo", price: "₹25-50" },
+                    { name: "Happi", price: "₹22-48" },
+                    { name: "Rabicip", price: "₹23-47" },
+                    { name: "Rabeloc", price: "₹24-49" }
+                ]
+            },
+            {
+                brand: "Allegra",
+                generic: "Fexofenadine",
+                category: "cold-cough",
+                usage: "Treats allergies, hay fever, skin allergies",
+                priceRange: "₹80-150 per strip",
+                alternatives: [
+                    { name: "Fexofenadine (Generic)", price: "₹40-80" },
+                    { name: "Fexo", price: "₹45-85" },
+                    { name: "Lcfex", price: "₹42-82" },
+                    { name: "Altiva", price: "₹48-88" },
+                    { name: "Fexofen", price: "₹43-83" }
+                ]
+            },
+            {
+                brand: "Cetrizine",
+                generic: "Cetirizine",
+                category: "cold-cough",
+                usage: "Treats allergies, runny nose, itching",
+                priceRange: "₹15-40 per strip",
+                alternatives: [
+                    { name: "Cetirizine (Generic)", price: "₹8-15" },
+                    { name: "Alerid", price: "₹10-20" },
+                    { name: "Okacet", price: "₹9-18" },
+                    { name: "Cetzine", price: "₹8-16" },
+                    { name: "Zyrtec", price: "₹12-22" }
+                ]
+            },
+            {
+                brand: "Vicks Action 500",
+                generic: "Paracetamol + Phenylephrine + Caffeine",
+                category: "cold-cough",
+                usage: "Relief from cold, headache, nasal congestion",
+                priceRange: "₹25-50 per strip",
+                alternatives: [
+                    { name: "Coldact", price: "₹15-30" },
+                    { name: "Sinarest", price: "₹12-28" },
+                    { name: "D Cold Total", price: "₹18-35" },
+                    { name: "Chericof", price: "₹14-32" },
+                    { name: "Generic Cold Relief", price: "₹10-20" }
+                ]
+            },
+            {
+                brand: "Becosules",
+                generic: "Vitamin B Complex",
+                category: "vitamins",
+                usage: "Treats vitamin B deficiency, improves energy",
+                priceRange: "₹40-90 per strip",
+                alternatives: [
+                    { name: "B Complex (Generic)", price: "₹15-35" },
+                    { name: "Neurobion", price: "₹20-45" },
+                    { name: "Supradyn", price: "₹25-50" },
+                    { name: "Polybion", price: "₹18-40" },
+                    { name: "Nervijen", price: "₹22-48" }
+                ]
+            },
+            {
+                brand: "Shelcal",
+                generic: "Calcium + Vitamin D3",
+                category: "vitamins",
+                usage: "Treats calcium deficiency, strengthens bones",
+                priceRange: "₹80-150 per strip",
+                alternatives: [
+                    { name: "Calcium+D3 (Generic)", price: "₹30-60" },
+                    { name: "Calcimax", price: "₹35-70" },
+                    { name: "Calshine", price: "₹32-65" },
+                    { name: "Caldikind", price: "₹38-72" },
+                    { name: "Ostocalcium", price: "₹40-75" }
+                ]
+            },
+            {
+                brand: "Evion",
+                generic: "Vitamin E",
+                category: "vitamins",
+                usage: "Antioxidant, improves skin health",
+                priceRange: "₹50-120 per strip",
+                alternatives: [
+                    { name: "Vitamin E (Generic)", price: "₹20-40" },
+                    { name: "Evitol", price: "₹25-50" },
+                    { name: "E-Gen", price: "₹22-45" },
+                    { name: "Tocofil", price: "₹28-55" }
+                ]
+            },
+            {
+                brand: "Limcee",
+                generic: "Vitamin C",
+                category: "vitamins",
+                usage: "Boosts immunity, treats vitamin C deficiency",
+                priceRange: "₹30-60 per strip",
+                alternatives: [
+                    { name: "Vitamin C (Generic)", price: "₹10-20" },
+                    { name: "Cecon", price: "₹12-25" },
+                    { name: "Celin", price: "₹15-28" },
+                    { name: "C-Vit", price: "₹11-22" },
+                    { name: "Ascorbic Acid", price: "₹8-18" }
+                ]
+            },
+            {
+                brand: "Brufen",
+                generic: "Ibuprofen",
+                category: "fever-pain",
+                usage: "Pain relief, reduces inflammation and fever",
+                priceRange: "₹20-45 per strip",
+                alternatives: [
+                    { name: "Ibuprofen (Generic)", price: "₹8-18" },
+                    { name: "Ibugesic", price: "₹10-22" },
+                    { name: "Ibugesic Plus", price: "₹12-25" },
+                    { name: "Advil", price: "₹15-30" },
+                    { name: "Ibuclin", price: "₹11-23" }
+                ]
+            },
+            {
+                brand: "Disprin",
+                generic: "Aspirin",
+                category: "fever-pain",
+                usage: "Pain relief, prevents blood clots, reduces fever",
+                priceRange: "₹10-25 per strip",
+                alternatives: [
+                    { name: "Aspirin (Generic)", price: "₹5-10" },
+                    { name: "Ecosprin", price: "₹6-12" },
+                    { name: "Loprin", price: "₹7-13" },
+                    { name: "Aspent", price: "₹6-11" }
+                ]
+            },
+            {
+                brand: "Voltaren",
+                generic: "Diclofenac",
+                category: "fever-pain",
+                usage: "Pain relief, treats arthritis, muscle pain",
+                priceRange: "₹30-70 per strip",
+                alternatives: [
+                    { name: "Diclofenac (Generic)", price: "₹12-25" },
+                    { name: "Voveran", price: "₹15-30" },
+                    { name: "Diclogesic", price: "₹14-28" },
+                    { name: "Flexon", price: "₹13-27" },
+                    { name: "Arthril", price: "₹16-32" }
+                ]
+            },
+            {
+                brand: "Ciprodex",
+                generic: "Ciprofloxacin",
+                category: "antibiotics",
+                usage: "Antibiotic for bacterial infections, UTI",
+                priceRange: "₹50-120 per strip",
+                alternatives: [
+                    { name: "Ciprofloxacin (Generic)", price: "₹20-45" },
+                    { name: "Ciplox", price: "₹25-50" },
+                    { name: "Cifran", price: "₹22-48" },
+                    { name: "Ciprowin", price: "₹23-47" },
+                    { name: "Alcipro", price: "₹24-49" }
+                ]
+            },
+            {
+                brand: "Moxikind",
+                generic: "Amoxicillin",
+                category: "antibiotics",
+                usage: "Antibiotic for ear, throat, skin infections",
+                priceRange: "₹40-90 per strip",
+                alternatives: [
+                    { name: "Amoxicillin (Generic)", price: "₹18-35" },
+                    { name: "Novamox", price: "₹20-40" },
+                    { name: "Almox", price: "₹19-38" },
+                    { name: "Wymox", price: "₹21-42" },
+                    { name: "Amoxil", price: "₹22-45" }
+                ]
+            },
+            {
+                brand: "Zifi",
+                generic: "Cefixime",
+                category: "antibiotics",
+                usage: "Antibiotic for respiratory, urinary tract infections",
+                priceRange: "₹70-150 per strip",
+                alternatives: [
+                    { name: "Cefixime (Generic)", price: "₹30-65" },
+                    { name: "Cefolac", price: "₹35-70" },
+                    { name: "Ceftas", price: "₹32-68" },
+                    { name: "Milixim", price: "₹38-75" },
+                    { name: "Taxim O", price: "₹40-80" }
+                ]
+            },
+            {
+                brand: "Althrocin",
+                generic: "Erythromycin",
+                category: "antibiotics",
+                usage: "Antibiotic for respiratory tract infections",
+                priceRange: "₹35-80 per strip",
+                alternatives: [
+                    { name: "Erythromycin (Generic)", price: "₹15-30" },
+                    { name: "Erytop", price: "₹18-35" },
+                    { name: "E-Mycin", price: "₹20-38" },
+                    { name: "Erythrocin", price: "₹17-33" }
+                ]
+            },
+            {
+                brand: "Glucobay",
+                generic: "Acarbose",
+                category: "diabetes",
+                usage: "Controls blood sugar after meals in diabetes",
+                priceRange: "₹100-200 per strip",
+                alternatives: [
+                    { name: "Acarbose (Generic)", price: "₹45-90" },
+                    { name: "Prandial", price: "₹50-100" },
+                    { name: "Carbose", price: "₹48-95" },
+                    { name: "Glucar", price: "₹52-105" }
+                ]
+            },
+            {
+                brand: "Amaryl",
+                generic: "Glimepiride",
+                category: "diabetes",
+                usage: "Controls blood sugar in Type 2 diabetes",
+                priceRange: "₹60-140 per strip",
+                alternatives: [
+                    { name: "Glimepiride (Generic)", price: "₹25-55" },
+                    { name: "Glimisave", price: "₹28-60" },
+                    { name: "Glyciphage G", price: "₹30-65" },
+                    { name: "Gemer", price: "₹32-68" }
+                ]
+            },
+            {
+                brand: "Januvia",
+                generic: "Sitagliptin",
+                category: "diabetes",
+                usage: "Controls blood sugar in Type 2 diabetes",
+                priceRange: "₹250-450 per strip",
+                alternatives: [
+                    { name: "Sitagliptin (Generic)", price: "₹100-200" },
+                    { name: "Istavel", price: "₹110-220" },
+                    { name: "Zita", price: "₹105-210" },
+                    { name: "Sitamet", price: "₹115-225" }
+                ]
+            },
+            {
+                brand: "Norvasc",
+                generic: "Amlodipine",
+                category: "bp",
+                usage: "Controls high blood pressure",
+                priceRange: "₹40-90 per strip",
+                alternatives: [
+                    { name: "Amlodipine (Generic)", price: "₹12-30" },
+                    { name: "Amlong", price: "₹15-35" },
+                    { name: "Amlokind", price: "₹18-38" },
+                    { name: "Stamlo", price: "₹20-40" }
+                ]
+            },
+            {
+                brand: "Losar",
+                generic: "Losartan",
+                category: "bp",
+                usage: "Controls high blood pressure, protects kidneys",
+                priceRange: "₹70-140 per strip",
+                alternatives: [
+                    { name: "Losartan (Generic)", price: "₹30-60" },
+                    { name: "Losacar", price: "₹35-68" },
+                    { name: "Repace", price: "₹32-65" },
+                    { name: "Losakind", price: "₹33-66" }
+                ]
+            },
+            {
+                brand: "Nicardia",
+                generic: "Nifedipine",
+                category: "bp",
+                usage: "Controls high blood pressure and chest pain",
+                priceRange: "₹50-110 per strip",
+                alternatives: [
+                    { name: "Nifedipine (Generic)", price: "₹20-45" },
+                    { name: "Adalat", price: "₹25-55" },
+                    { name: "Niflong", price: "₹22-50" },
+                    { name: "Calcigard", price: "₹28-58" }
+                ]
+            },
+            {
+                brand: "Nexium",
+                generic: "Esomeprazole",
+                category: "acidity",
+                usage: "Treats GERD, acidity, stomach ulcers",
+                priceRange: "₹60-150 per strip",
+                alternatives: [
+                    { name: "Esomeprazole (Generic)", price: "₹25-60" },
+                    { name: "Esoz", price: "₹28-65" },
+                    { name: "Raciper", price: "₹30-68" },
+                    { name: "Sompraz", price: "₹32-70" }
+                ]
+            },
+            {
+                brand: "Gelusil",
+                generic: "Aluminium Hydroxide + Magnesium",
+                category: "acidity",
+                usage: "Quick relief from acidity and heartburn",
+                priceRange: "₹30-60 per bottle",
+                alternatives: [
+                    { name: "Digene", price: "₹15-35" },
+                    { name: "Mucaine", price: "₹18-38" },
+                    { name: "Ulgel", price: "₹12-30" },
+                    { name: "Antacid Suspension", price: "₹10-25" }
+                ]
+            },
+            {
+                brand: "Prevacid",
+                generic: "Lansoprazole",
+                category: "acidity",
+                usage: "Treats stomach ulcers, GERD, acidity",
+                priceRange: "₹50-120 per strip",
+                alternatives: [
+                    { name: "Lansoprazole (Generic)", price: "₹22-50" },
+                    { name: "Lanzol", price: "₹25-55" },
+                    { name: "Lanzap", price: "₹23-52" },
+                    { name: "Lansol", price: "₹24-53" }
+                ]
+            },
+            {
+                brand: "Benadryl",
+                generic: "Diphenhydramine",
+                category: "cold-cough",
+                usage: "Treats allergies, cough, cold symptoms",
+                priceRange: "₹40-90 per bottle",
+                alternatives: [
+                    { name: "Diphenhydramine (Generic)", price: "₹15-35" },
+                    { name: "Phenergan", price: "₹20-45" },
+                    { name: "Allergin", price: "₹18-40" },
+                    { name: "Dilosyn", price: "₹22-48" }
+                ]
+            },
+            {
+                brand: "Montair",
+                generic: "Montelukast",
+                category: "cold-cough",
+                usage: "Prevents asthma, treats allergic rhinitis",
+                priceRange: "₹80-180 per strip",
+                alternatives: [
+                    { name: "Montelukast (Generic)", price: "₹35-75" },
+                    { name: "Montec", price: "₹40-82" },
+                    { name: "Montek", price: "₹38-78" },
+                    { name: "Telekast", price: "₹42-85" }
+                ]
+            },
+            {
+                brand: "Sinarest",
+                generic: "Paracetamol + Chlorpheniramine + Phenylephrine",
+                category: "cold-cough",
+                usage: "Relief from cold, flu, nasal congestion",
+                priceRange: "₹25-50 per strip",
+                alternatives: [
+                    { name: "Cheston Cold", price: "₹15-30" },
+                    { name: "D Cold Total", price: "₹18-35" },
+                    { name: "Coldact", price: "₹16-32" },
+                    { name: "Sinarest AF", price: "₹12-28" }
+                ]
+            },
+            {
+                brand: "Mucinex",
+                generic: "Guaifenesin",
+                category: "cold-cough",
+                usage: "Loosens mucus and relieves chest congestion",
+                priceRange: "₹100-200 per bottle",
+                alternatives: [
+                    { name: "Guaifenesin (Generic)", price: "₹40-80" },
+                    { name: "Grilinctus", price: "₹45-85" },
+                    { name: "Cofnil", price: "₹42-82" },
+                    { name: "Tusq-DX", price: "₹48-88" }
+                ]
+            },
+            {
+                brand: "Revital",
+                generic: "Multivitamin + Minerals",
+                category: "vitamins",
+                usage: "Improves energy, treats vitamin deficiency",
+                priceRange: "₹150-300 per strip",
+                alternatives: [
+                    { name: "Multivitamin (Generic)", price: "₹50-100" },
+                    { name: "Supradyn", price: "₹60-120" },
+                    { name: "A to Z", price: "₹55-110" },
+                    { name: "Zincovit", price: "₹65-130" }
+                ]
+            },
+            {
+                brand: "Neurobion Forte",
+                generic: "Vitamin B1, B6, B12",
+                category: "vitamins",
+                usage: "Treats nerve problems, vitamin B deficiency",
+                priceRange: "₹50-110 per strip",
+                alternatives: [
+                    { name: "B Complex (Generic)", price: "₹15-35" },
+                    { name: "Methylcobal", price: "₹20-45" },
+                    { name: "Nervigen", price: "₹22-48" },
+                    { name: "Bestozyme", price: "₹18-40" }
+                ]
+            },
+            {
+                brand: "Folvite",
+                generic: "Folic Acid",
+                category: "vitamins",
+                usage: "Treats anemia, important during pregnancy",
+                priceRange: "₹20-40 per strip",
+                alternatives: [
+                    { name: "Folic Acid (Generic)", price: "₹5-12" },
+                    { name: "Folifer", price: "₹8-15" },
+                    { name: "Fol-G", price: "₹7-14" },
+                    { name: "Folart", price: "₹9-16" }
+                ]
+            },
+            {
+                brand: "Ferrous Ascorbate",
+                generic: "Iron + Vitamin C",
+                category: "vitamins",
+                usage: "Treats iron deficiency anemia",
+                priceRange: "₹60-130 per strip",
+                alternatives: [
+                    { name: "Iron+C (Generic)", price: "₹25-55" },
+                    { name: "Autrin", price: "₹30-60" },
+                    { name: "Orofer XT", price: "₹35-68" },
+                    { name: "Hemfer", price: "₹28-58" }
+                ]
+            },
+            {
+                brand: "Zincovit",
+                generic: "Zinc + Multivitamins",
+                category: "vitamins",
+                usage: "Boosts immunity, treats deficiencies",
+                priceRange: "₹100-200 per strip",
+                alternatives: [
+                    { name: "Zinc + Multi (Generic)", price: "₹40-80" },
+                    { name: "Supradyn Daily", price: "₹50-100" },
+                    { name: "Revital H", price: "₹60-120" },
+                    { name: "A to Z NS", price: "₹45-90" }
+                ]
+            },
+            {
+                brand: "Calpol",
+                generic: "Paracetamol",
+                category: "fever-pain",
+                usage: "Used for fever and pain relief in children and adults",
+                priceRange: "₹5-15 per strip",
+                alternatives: [
+                    { name: "Paracetamol (Generic)", price: "₹5-8" },
+                    { name: "Crocin", price: "₹8-12" },
+                    { name: "Dolo 650", price: "₹12-15" },
+                    { name: "Metacin", price: "₹6-10" }
+                ]
+            },
+            {
+                brand: "Voveran",
+                generic: "Diclofenac",
+                category: "fever-pain",
+                usage: "Pain relief and anti-inflammatory",
+                priceRange: "₹25-60 per strip",
+                alternatives: [
+                    { name: "Diclofenac (Generic)", price: "₹12-25" },
+                    { name: "Voltaren", price: "₹18-35" },
+                    { name: "Diclogesic", price: "₹14-28" },
+                    { name: "Flexon", price: "₹13-27" }
+                ]
+            },
+            {
+                brand: "Zantac",
+                generic: "Ranitidine",
+                category: "acidity",
+                usage: "Treats acidity, heartburn, ulcers",
+                priceRange: "₹30-70 per strip",
+                alternatives: [
+                    { name: "Ranitidine (Generic)", price: "₹12-28" },
+                    { name: "Rantac", price: "₹15-32" },
+                    { name: "Aciloc", price: "₹14-30" },
+                    { name: "Zinetac", price: "₹16-34" }
+                ]
+            },
+            {
+                brand: "Rantac",
+                generic: "Ranitidine",
+                category: "acidity",
+                usage: "Reduces stomach acid, treats ulcers",
+                priceRange: "₹25-60 per strip",
+                alternatives: [
+                    { name: "Ranitidine (Generic)", price: "₹12-28" },
+                    { name: "Aciloc", price: "₹14-30" },
+                    { name: "Zantac", price: "₹18-35" },
+                    { name: "Zinetac", price: "₹16-34" }
+                ]
+            },
+            {
+                brand: "Avomine",
+                generic: "Promethazine",
+                category: "cold-cough",
+                usage: "Prevents motion sickness, treats allergies",
+                priceRange: "₹20-45 per strip",
+                alternatives: [
+                    { name: "Promethazine (Generic)", price: "₹10-22" },
+                    { name: "Phenergan", price: "₹12-25" },
+                    { name: "Histantin", price: "₹11-23" }
+                ]
+            },
+            {
+                brand: "Wysolone",
+                generic: "Prednisolone",
+                category: "antibiotics",
+                usage: "Reduces inflammation, treats allergies",
+                priceRange: "₹40-90 per strip",
+                alternatives: [
+                    { name: "Prednisolone (Generic)", price: "₹15-35" },
+                    { name: "Omnacortil", price: "₹18-40" },
+                    { name: "Deltacortril", price: "₹20-42" },
+                    { name: "Hostacortin", price: "₹17-38" }
+                ]
+            },
+            {
+                brand: "Atorva",
+                generic: "Atorvastatin",
+                category: "heart",
+                usage: "Lowers cholesterol, prevents heart disease",
+                priceRange: "₹50-120 per strip",
+                nppaPrice: "₹5.50-₹19.34 per tablet",
+                nppaNote: "10mg: ₹5.50 | 20mg: ₹13.32 | 40mg: ₹19.34",
+                alternatives: [
+                    { name: "Atorvastatin (Generic)", price: "₹20-45" },
+                    { name: "Lipitor", price: "₹25-55" },
+                    { name: "Atorlip", price: "₹22-48" },
+                    { name: "Tonact", price: "₹28-58" }
+                ]
+            },
+            {
+                brand: "Rosuvastatin",
+                generic: "Rosuvastatin",
+                category: "heart",
+                usage: "Reduces cholesterol levels",
+                priceRange: "₹60-150 per strip",
+                alternatives: [
+                    { name: "Rosuvastatin (Generic)", price: "₹25-60" },
+                    { name: "Rosuvas", price: "₹30-68" },
+                    { name: "Crestor", price: "₹35-75" },
+                    { name: "Rosulip", price: "₹28-65" }
+                ]
+            },
+            {
+                brand: "Vasograin",
+                generic: "Ergotamine + Caffeine + Paracetamol",
+                category: "fever-pain",
+                usage: "Treats migraine headaches",
+                priceRange: "₹40-90 per strip",
+                alternatives: [
+                    { name: "Migranil", price: "₹25-55" },
+                    { name: "Cafergot", price: "₹30-65" },
+                    { name: "Ergotab", price: "₹22-50" }
+                ]
+            },
+            {
+                brand: "Sumo",
+                generic: "Nimesulide + Paracetamol",
+                category: "fever-pain",
+                usage: "Pain relief and fever reduction",
+                priceRange: "₹20-45 per strip",
+                alternatives: [
+                    { name: "Nimesulide+PCM (Generic)", price: "₹10-22" },
+                    { name: "Nise Plus", price: "₹12-25" },
+                    { name: "Nicip Plus", price: "₹11-24" },
+                    { name: "Nimulid", price: "₹13-26" }
+                ]
+            },
+            {
+                brand: "Liv 52",
+                generic: "Herbal Liver Support",
+                category: "vitamins",
+                usage: "Supports liver health and function",
+                priceRange: "₹100-200 per bottle",
+                alternatives: [
+                    { name: "Himalaya Liver Care", price: "₹60-120" },
+                    { name: "Livergen", price: "₹50-100" },
+                    { name: "Hepamerz", price: "₹80-160" }
+                ]
+            },
+            {
+                brand: "Betadine",
+                generic: "Povidone Iodine",
+                category: "skin",
+                usage: "Antiseptic for cuts, wounds, skin infections",
+                priceRange: "₹40-80 per bottle",
+                alternatives: [
+                    { name: "Povidone Iodine (Generic)", price: "₹15-30" },
+                    { name: "Wokadine", price: "₹20-40" },
+                    { name: "Krosin", price: "₹18-35" },
+                    { name: "Biozine", price: "₹22-45" }
+                ]
+            },
+            {
+                brand: "Ascoril",
+                generic: "Terbutaline + Bromhexine + Guaifenesin",
+                category: "cold-cough",
+                usage: "Relieves cough with mucus, chest congestion",
+                priceRange: "₹80-150 per bottle",
+                alternatives: [
+                    { name: "Ambrodil", price: "₹40-80" },
+                    { name: "Grilinctus BM", price: "₹45-85" },
+                    { name: "Asthakind", price: "₹50-90" },
+                    { name: "Kofarest", price: "₹42-82" }
+                ]
+            },
+            {
+                brand: "Thyronorm",
+                generic: "Levothyroxine",
+                category: "vitamins",
+                usage: "Treats hypothyroidism (low thyroid hormone)",
+                priceRange: "₹40-90 per strip",
+                alternatives: [
+                    { name: "Levothyroxine (Generic)", price: "₹15-35" },
+                    { name: "Eltroxin", price: "₹18-40" },
+                    { name: "Thyrox", price: "₹20-42" },
+                    { name: "Thyroup", price: "₹16-38" }
+                ]
+            },
+            {
+                brand: "Novamox",
+                generic: "Amoxicillin",
+                category: "antibiotics",
+                usage: "Treats bacterial infections of ear, nose, throat, skin",
+                priceRange: "₹40-90 per strip",
+                alternatives: [
+                    { name: "Amoxicillin (Generic)", price: "₹18-35" },
+                    { name: "Moxikind", price: "₹20-40" },
+                    { name: "Almox", price: "₹19-38" },
+                    { name: "Wymox", price: "₹21-42" },
+                    { name: "Amoxil", price: "₹22-45" }
+                ]
+            },
+            {
+                brand: "Doxycycline",
+                generic: "Doxycycline",
+                category: "antibiotics",
+                usage: "Treats acne, respiratory infections, urinary infections",
+                priceRange: "₹30-80 per strip",
+                alternatives: [
+                    { name: "Doxycycline (Generic)", price: "₹15-35" },
+                    { name: "Doxy-1", price: "₹18-38" },
+                    { name: "Doxt", price: "₹20-40" },
+                    { name: "Vibramycin", price: "₹25-50" }
+                ]
+            },
+            {
+                brand: "Levoflox",
+                generic: "Levofloxacin",
+                category: "antibiotics",
+                usage: "Treats bacterial infections, pneumonia, sinusitis",
+                priceRange: "₹60-140 per strip",
+                alternatives: [
+                    { name: "Levofloxacin (Generic)", price: "₹25-55" },
+                    { name: "Levocin", price: "₹30-60" },
+                    { name: "Levoday", price: "₹28-58" },
+                    { name: "Lquin", price: "₹32-65" }
+                ]
+            },
+            {
+                brand: "Flagyl",
+                generic: "Metronidazole",
+                category: "antibiotics",
+                usage: "Treats bacterial and parasitic infections, dental infections",
+                priceRange: "₹20-50 per strip",
+                alternatives: [
+                    { name: "Metronidazole (Generic)", price: "₹10-22" },
+                    { name: "Metrogyl", price: "₹12-25" },
+                    { name: "Flagyl", price: "₹15-30" },
+                    { name: "Metron", price: "₹11-23" }
+                ]
+            },
+            {
+                brand: "Klaricid",
+                generic: "Clarithromycin",
+                category: "antibiotics",
+                usage: "Treats respiratory tract infections, H. pylori",
+                priceRange: "₹80-180 per strip",
+                alternatives: [
+                    { name: "Clarithromycin (Generic)", price: "₹35-75" },
+                    { name: "Claribid", price: "₹40-80" },
+                    { name: "Clarbact", price: "₹38-78" },
+                    { name: "Synclar", price: "₹45-85" }
+                ]
+            },
+            {
+                brand: "Clindamycin",
+                generic: "Clindamycin",
+                category: "antibiotics",
+                usage: "Treats serious bacterial infections, bone infections",
+                priceRange: "₹60-150 per strip",
+                alternatives: [
+                    { name: "Clindamycin (Generic)", price: "₹30-70" },
+                    { name: "Dalacin", price: "₹35-75" },
+                    { name: "Clindac", price: "₹32-72" },
+                    { name: "Clintec", price: "₹38-78" }
+                ]
+            },
+            {
+                brand: "Linezolid",
+                generic: "Linezolid",
+                category: "antibiotics",
+                usage: "Treats resistant bacterial infections, pneumonia",
+                priceRange: "₹120-280 per strip",
+                alternatives: [
+                    { name: "Linezolid (Generic)", price: "₹60-130" },
+                    { name: "Linospan", price: "₹70-150" },
+                    { name: "Lizolid", price: "₹65-140" },
+                    { name: "Linez", price: "₹75-160" }
+                ]
+            },
+            {
+                brand: "Nitrofurantoin",
+                generic: "Nitrofurantoin",
+                category: "antibiotics",
+                usage: "Treats urinary tract infections",
+                priceRange: "₹40-90 per strip",
+                alternatives: [
+                    { name: "Nitrofurantoin (Generic)", price: "₹18-40" },
+                    { name: "Macrobid", price: "₹22-48" },
+                    { name: "Furadantin", price: "₹25-50" },
+                    { name: "Nitrowin", price: "₹20-45" }
+                ]
+            },
+            {
+                brand: "Cefadroxil",
+                generic: "Cefadroxil",
+                category: "antibiotics",
+                usage: "Treats skin infections, urinary tract infections",
+                priceRange: "₹50-120 per strip",
+                alternatives: [
+                    { name: "Cefadroxil (Generic)", price: "₹25-55" },
+                    { name: "Droxyl", price: "₹28-60" },
+                    { name: "Cef", price: "₹30-65" },
+                    { name: "Kefdox", price: "₹32-68" }
+                ]
+            },
+            {
+                brand: "Cefu",
+                generic: "Cefuroxime",
+                category: "antibiotics",
+                usage: "Treats bacterial infections, Lyme disease",
+                priceRange: "₹80-180 per strip",
+                alternatives: [
+                    { name: "Cefuroxime (Generic)", price: "₹35-75" },
+                    { name: "Ceftum", price: "₹40-85" },
+                    { name: "Zinacef", price: "₹45-90" },
+                    { name: "Supacef", price: "₹38-80" }
+                ]
+            },
+            {
+                brand: "Flucos",
+                generic: "Fluconazole",
+                category: "antibiotics",
+                usage: "Treats fungal infections, vaginal yeast infections",
+                priceRange: "₹50-120 per strip",
+                alternatives: [
+                    { name: "Fluconazole (Generic)", price: "₹20-50" },
+                    { name: "Forcan", price: "₹25-55" },
+                    { name: "Fluka", price: "₹22-52" },
+                    { name: "Zocon", price: "₹28-60" }
+                ]
+            },
+            {
+                brand: "Griseofulvin",
+                generic: "Griseofulvin",
+                category: "antibiotics",
+                usage: "Treats fungal infections of skin, hair, nails",
+                priceRange: "₹60-140 per strip",
+                alternatives: [
+                    { name: "Griseofulvin (Generic)", price: "₹30-65" },
+                    { name: "Grisovin", price: "₹35-70" },
+                    { name: "Fulvicin", price: "₹32-68" }
+                ]
+            },
+            {
+                brand: "Itraconazole",
+                generic: "Itraconazole",
+                category: "antibiotics",
+                usage: "Treats fungal infections of lungs, nails",
+                priceRange: "₹80-200 per strip",
+                alternatives: [
+                    { name: "Itraconazole (Generic)", price: "₹35-85" },
+                    { name: "Itaspor", price: "₹40-95" },
+                    { name: "Canditral", price: "₹45-100" },
+                    { name: "Itrafun", price: "₹38-90" }
+                ]
+            },
+            {
+                brand: "Terbinafine",
+                generic: "Terbinafine",
+                category: "antibiotics",
+                usage: "Treats fungal infections of nails, skin",
+                priceRange: "₹100-250 per strip",
+                alternatives: [
+                    { name: "Terbinafine (Generic)", price: "₹45-110" },
+                    { name: "Lamisil", price: "₹60-140" },
+                    { name: "Terbest", price: "₹50-120" },
+                    { name: "Sebifin", price: "₹55-130" }
+                ]
+            },
+            {
+                brand: "Acivir",
+                generic: "Acyclovir",
+                category: "antibiotics",
+                usage: "Treats herpes, chickenpox, shingles",
+                priceRange: "₹60-150 per strip",
+                alternatives: [
+                    { name: "Acyclovir (Generic)", price: "₹25-65" },
+                    { name: "Zovirax", price: "₹35-80" },
+                    { name: "Herpex", price: "₹30-70" },
+                    { name: "Acivir", price: "₹32-75" }
+                ]
+            },
+            {
+                brand: "Albendazole",
+                generic: "Albendazole",
+                category: "antibiotics",
+                usage: "Treats worm infections, parasitic infections",
+                priceRange: "₹10-30 per tablet",
+                alternatives: [
+                    { name: "Albendazole (Generic)", price: "₹5-12" },
+                    { name: "Zentel", price: "₹8-18" },
+                    { name: "Albend", price: "₹6-14" },
+                    { name: "Bendex", price: "₹7-15" }
+                ]
+            },
+            {
+                brand: "Mebex",
+                generic: "Mebendazole",
+                category: "antibiotics",
+                usage: "Treats pinworm, roundworm, hookworm infections",
+                priceRange: "₹15-40 per strip",
+                alternatives: [
+                    { name: "Mebendazole (Generic)", price: "₹8-18" },
+                    { name: "Vermox", price: "₹10-22" },
+                    { name: "Mebex", price: "₹9-20" }
+                ]
+            },
+            {
+                brand: "Ivermectin",
+                generic: "Ivermectin",
+                category: "antibiotics",
+                usage: "Treats parasitic infections, scabies, head lice",
+                priceRange: "₹30-80 per strip",
+                alternatives: [
+                    { name: "Ivermectin (Generic)", price: "₹15-35" },
+                    { name: "Iverfast", price: "₹18-40" },
+                    { name: "Scabioral", price: "₹20-45" },
+                    { name: "Ivecop", price: "₹17-38" }
+                ]
+            },
+            {
+                brand: "Envas",
+                generic: "Enalapril",
+                category: "bp",
+                usage: "Controls high blood pressure, treats heart failure",
+                priceRange: "₹40-90 per strip",
+                alternatives: [
+                    { name: "Enalapril (Generic)", price: "₹18-40" },
+                    { name: "Enapril", price: "₹20-45" },
+                    { name: "Enace", price: "₹22-48" },
+                    { name: "Enam", price: "₹19-42" }
+                ]
+            },
+            {
+                brand: "Cardace",
+                generic: "Ramipril",
+                category: "bp",
+                usage: "Controls high blood pressure, prevents heart attack",
+                priceRange: "₹60-140 per strip",
+                alternatives: [
+                    { name: "Ramipril (Generic)", price: "₹25-60" },
+                    { name: "Ramipres", price: "₹30-68" },
+                    { name: "Ramistar", price: "₹28-65" },
+                    { name: "Hopace", price: "₹32-70" }
+                ]
+            },
+            {
+                brand: "Inderal",
+                generic: "Propranolol",
+                category: "bp",
+                usage: "Controls blood pressure, prevents migraine, treats anxiety",
+                priceRange: "₹20-50 per strip",
+                alternatives: [
+                    { name: "Propranolol (Generic)", price: "₹10-22" },
+                    { name: "Ciplar", price: "₹12-25" },
+                    { name: "Inderal", price: "₹15-30" },
+                    { name: "Betacap", price: "₹11-24" }
+                ]
+            },
+            {
+                brand: "Metolar",
+                generic: "Metoprolol",
+                category: "bp",
+                usage: "Controls blood pressure, prevents angina",
+                priceRange: "₹30-80 per strip",
+                alternatives: [
+                    { name: "Metoprolol (Generic)", price: "₹15-35" },
+                    { name: "Betaloc", price: "₹18-40" },
+                    { name: "Metolar", price: "₹20-45" },
+                    { name: "Metosartan", price: "₹17-38" }
+                ]
+            },
+            {
+                brand: "Labetalol",
+                generic: "Labetalol",
+                category: "bp",
+                usage: "Controls high blood pressure, especially during pregnancy",
+                priceRange: "₹80-180 per strip",
+                alternatives: [
+                    { name: "Labetalol (Generic)", price: "₹35-75" },
+                    { name: "Lobet", price: "₹40-85" },
+                    { name: "Labeta", price: "₹38-80" }
+                ]
+            },
+            {
+                brand: "Dilzem",
+                generic: "Diltiazem",
+                category: "bp",
+                usage: "Controls blood pressure, treats chest pain",
+                priceRange: "₹50-120 per strip",
+                alternatives: [
+                    { name: "Diltiazem (Generic)", price: "₹22-50" },
+                    { name: "Dilcontin", price: "₹25-55" },
+                    { name: "Diltahexal", price: "₹28-60" },
+                    { name: "Dilzem", price: "₹30-65" }
+                ]
+            },
+            {
+                brand: "Isoptin",
+                generic: "Verapamil",
+                category: "bp",
+                usage: "Controls blood pressure, treats irregular heartbeat",
+                priceRange: "₹40-100 per strip",
+                alternatives: [
+                    { name: "Verapamil (Generic)", price: "₹18-42" },
+                    { name: "Calan", price: "₹22-48" },
+                    { name: "Verpamil", price: "₹20-45" },
+                    { name: "Calaptin", price: "₹25-52" }
+                ]
+            },
+            {
+                brand: "Plavix",
+                generic: "Clopidogrel",
+                category: "heart",
+                usage: "Prevents blood clots, heart attack, stroke",
+                priceRange: "₹100-250 per strip",
+                alternatives: [
+                    { name: "Clopidogrel (Generic)", price: "₹40-100" },
+                    { name: "Clopivas", price: "₹50-120" },
+                    { name: "Deplatt", price: "₹55-130" },
+                    { name: "Plagerine", price: "₹45-110" }
+                ]
+            },
+            {
+                brand: "Digoxin",
+                generic: "Digoxin",
+                category: "heart",
+                usage: "Treats heart failure, irregular heartbeat",
+                priceRange: "₹15-35 per strip",
+                alternatives: [
+                    { name: "Digoxin (Generic)", price: "₹8-15" },
+                    { name: "Lanoxin", price: "₹10-20" },
+                    { name: "Digitalis", price: "₹9-18" }
+                ]
+            },
+            {
+                brand: "Aldactone",
+                generic: "Spironolactone",
+                category: "bp",
+                usage: "Treats high blood pressure, heart failure, fluid retention",
+                priceRange: "₹50-120 per strip",
+                alternatives: [
+                    { name: "Spironolactone (Generic)", price: "₹20-50" },
+                    { name: "Spiractin", price: "₹25-58" },
+                    { name: "Aldactone", price: "₹30-65" },
+                    { name: "Spiromide", price: "₹22-55" }
+                ]
+            },
+            {
+                brand: "Lasix",
+                generic: "Furosemide",
+                category: "bp",
+                usage: "Treats fluid retention, high blood pressure",
+                priceRange: "₹10-30 per strip",
+                alternatives: [
+                    { name: "Furosemide (Generic)", price: "₹5-12" },
+                    { name: "Lasix", price: "₹8-18" },
+                    { name: "Frusenex", price: "₹6-14" },
+                    { name: "Frusix", price: "₹7-15" }
+                ]
+            },
+            {
+                brand: "Hydrochlorothiazide",
+                generic: "Hydrochlorothiazide",
+                category: "bp",
+                usage: "Treats high blood pressure, fluid retention",
+                priceRange: "₹15-40 per strip",
+                alternatives: [
+                    { name: "HCTZ (Generic)", price: "₹8-18" },
+                    { name: "Aquazide", price: "₹10-22" },
+                    { name: "Esidrix", price: "₹12-25" }
+                ]
+            },
+            {
+                brand: "Teneligliptin",
+                generic: "Teneligliptin",
+                category: "diabetes",
+                usage: "Controls blood sugar in Type 2 diabetes",
+                priceRange: "₹150-300 per strip",
+                alternatives: [
+                    { name: "Teneligliptin (Generic)", price: "₹70-150" },
+                    { name: "Ziten", price: "₹80-170" },
+                    { name: "Tenelia", price: "₹75-160" },
+                    { name: "Teneliglow", price: "₹85-180" }
+                ]
+            },
+            {
+                brand: "Omez",
+                generic: "Omeprazole",
+                category: "acidity",
+                usage: "Treats acidity, GERD, stomach ulcers",
+                priceRange: "₹40-90 per strip",
+                alternatives: [
+                    { name: "Omeprazole (Generic)", price: "₹15-35" },
+                    { name: "Omez", price: "₹20-45" },
+                    { name: "Losec", price: "₹25-50" },
+                    { name: "Omecar", price: "₹18-40" }
+                ]
+            },
+            {
+                brand: "Motilium",
+                generic: "Domperidone",
+                category: "acidity",
+                usage: "Treats nausea, vomiting, bloating",
+                priceRange: "₹30-70 per strip",
+                alternatives: [
+                    { name: "Domperidone (Generic)", price: "₹12-28" },
+                    { name: "Vomistop", price: "₹15-32" },
+                    { name: "Domstal", price: "₹18-35" },
+                    { name: "Motinorm", price: "₹14-30" }
+                ]
+            },
+            {
+                brand: "Emeset",
+                generic: "Ondansetron",
+                category: "acidity",
+                usage: "Prevents nausea and vomiting from chemotherapy, surgery",
+                priceRange: "₹40-100 per strip",
+                alternatives: [
+                    { name: "Ondansetron (Generic)", price: "₹18-42" },
+                    { name: "Zofran", price: "₹25-55" },
+                    { name: "Ondem", price: "₹22-48" },
+                    { name: "Emeset", price: "₹20-45" }
+                ]
+            },
+            {
+                brand: "Meftal Spas",
+                generic: "Dicyclomine",
+                category: "acidity",
+                usage: "Treats stomach cramps, irritable bowel syndrome",
+                priceRange: "₹30-70 per strip",
+                alternatives: [
+                    { name: "Dicyclomine (Generic)", price: "₹12-28" },
+                    { name: "Cyclopam", price: "₹15-32" },
+                    { name: "Spasmonil", price: "₹18-35" },
+                    { name: "Colimex", price: "₹14-30" }
+                ]
+            },
+            {
+                brand: "Imodium",
+                generic: "Loperamide",
+                category: "acidity",
+                usage: "Treats diarrhea",
+                priceRange: "₹30-70 per strip",
+                alternatives: [
+                    { name: "Loperamide (Generic)", price: "₹12-28" },
+                    { name: "Lopamide", price: "₹15-32" },
+                    { name: "Eldoper", price: "₹18-35" }
+                ]
+            },
+            {
+                brand: "Duphalac",
+                generic: "Lactulose",
+                category: "acidity",
+                usage: "Treats constipation, hepatic encephalopathy",
+                priceRange: "₹100-200 per bottle",
+                alternatives: [
+                    { name: "Lactulose (Generic)", price: "₹50-100" },
+                    { name: "Looz", price: "₹60-120" },
+                    { name: "Cremaffin", price: "₹55-110" },
+                    { name: "Lactihep", price: "₹65-130" }
+                ]
+            },
+            {
+                brand: "Dulcolax",
+                generic: "Bisacodyl",
+                category: "acidity",
+                usage: "Treats constipation",
+                priceRange: "₹20-50 per strip",
+                alternatives: [
+                    { name: "Bisacodyl (Generic)", price: "₹10-22" },
+                    { name: "Dulcolax", price: "₹12-25" },
+                    { name: "Laxatin", price: "₹11-23" }
+                ]
+            },
+            {
+                brand: "Isabgol",
+                generic: "Ispaghula",
+                category: "acidity",
+                usage: "Treats constipation, adds bulk to stool",
+                priceRange: "₹50-120 per bottle",
+                alternatives: [
+                    { name: "Ispaghula Husk (Generic)", price: "₹25-60" },
+                    { name: "Sat Isabgol", price: "₹30-70" },
+                    { name: "Fybogel", price: "₹35-80" }
+                ]
+            },
+            {
+                brand: "Saaz",
+                generic: "Sulfasalazine",
+                category: "acidity",
+                usage: "Treats ulcerative colitis, rheumatoid arthritis",
+                priceRange: "₹60-140 per strip",
+                alternatives: [
+                    { name: "Sulfasalazine (Generic)", price: "₹25-60" },
+                    { name: "Saaz", price: "₹30-70" },
+                    { name: "Salazopyrin", price: "₹35-75" }
+                ]
+            },
+            {
+                brand: "Mesacol",
+                generic: "Mesalazine",
+                category: "acidity",
+                usage: "Treats ulcerative colitis, inflammatory bowel disease",
+                priceRange: "₹80-200 per strip",
+                alternatives: [
+                    { name: "Mesalazine (Generic)", price: "₹35-85" },
+                    { name: "Mesacol", price: "₹45-100" },
+                    { name: "Asacol", price: "₹50-110" },
+                    { name: "Pentasa", price: "₹55-120" }
+                ]
+            },
+            {
+                brand: "Ultracet",
+                generic: "Tramadol",
+                category: "fever-pain",
+                usage: "Treats moderate to severe pain",
+                priceRange: "₹40-100 per strip",
+                alternatives: [
+                    { name: "Tramadol (Generic)", price: "₹18-42" },
+                    { name: "Tramazac", price: "₹22-48" },
+                    { name: "Dolotram", price: "₹20-45" },
+                    { name: "Tramadol HCl", price: "₹25-50" }
+                ]
+            },
+            {
+                brand: "Meftal",
+                generic: "Mefenamic Acid",
+                category: "fever-pain",
+                usage: "Treats menstrual pain, inflammation, fever",
+                priceRange: "₹30-70 per strip",
+                alternatives: [
+                    { name: "Mefenamic Acid (Generic)", price: "₹12-28" },
+                    { name: "Meftal", price: "₹15-32" },
+                    { name: "Ponstan", price: "₹18-35" },
+                    { name: "Mefgesic", price: "₹14-30" }
+                ]
+            },
+            {
+                brand: "Baclofen",
+                generic: "Baclofen",
+                category: "fever-pain",
+                usage: "Treats muscle spasms, multiple sclerosis",
+                priceRange: "₹60-140 per strip",
+                alternatives: [
+                    { name: "Baclofen (Generic)", price: "₹25-60" },
+                    { name: "Lioresal", price: "₹30-70" },
+                    { name: "Baclomac", price: "₹28-65" }
+                ]
+            },
+            {
+                brand: "Colchicine",
+                generic: "Colchicine",
+                category: "fever-pain",
+                usage: "Treats and prevents gout attacks",
+                priceRange: "₹50-120 per strip",
+                alternatives: [
+                    { name: "Colchicine (Generic)", price: "₹20-50" },
+                    { name: "Colchicindon", price: "₹25-58" },
+                    { name: "Colcrys", price: "₹30-65" }
+                ]
+            },
+            {
+                brand: "Zyloric",
+                generic: "Allopurinol",
+                category: "fever-pain",
+                usage: "Prevents gout, lowers uric acid",
+                priceRange: "₹20-50 per strip",
+                alternatives: [
+                    { name: "Allopurinol (Generic)", price: "₹10-22" },
+                    { name: "Zyloprim", price: "₹12-25" },
+                    { name: "Zyloric", price: "₹15-30" },
+                    { name: "Alloric", price: "₹11-24" }
+                ]
+            },
+            {
+                brand: "HCQS",
+                generic: "Hydroxychloroquine",
+                category: "fever-pain",
+                usage: "Treats rheumatoid arthritis, lupus, malaria",
+                priceRange: "₹60-150 per strip",
+                alternatives: [
+                    { name: "Hydroxychloroquine (Generic)", price: "₹25-65" },
+                    { name: "HCQ", price: "₹30-75" },
+                    { name: "Plaquenil", price: "₹35-80" },
+                    { name: "HCQS", price: "₹32-78" }
+                ]
+            },
+            {
+                brand: "Prozac",
+                generic: "Fluoxetine",
+                category: "mental-health",
+                usage: "Treats depression, OCD, panic disorder",
+                priceRange: "₹50-120 per strip",
+                alternatives: [
+                    { name: "Fluoxetine (Generic)", price: "₹20-50" },
+                    { name: "Fludac", price: "₹25-58" },
+                    { name: "Oxetin", price: "₹22-55" },
+                    { name: "Prodep", price: "₹28-60" }
+                ]
+            },
+            {
+                brand: "Nexito",
+                generic: "Escitalopram",
+                category: "mental-health",
+                usage: "Treats depression and anxiety disorders",
+                priceRange: "₹80-180 per strip",
+                alternatives: [
+                    { name: "Escitalopram (Generic)", price: "₹35-75" },
+                    { name: "Nexito", price: "₹40-85" },
+                    { name: "Esitalo", price: "₹38-80" },
+                    { name: "Citadep", price: "₹42-88" }
+                ]
+            },
+            {
+                brand: "Anafranil",
+                generic: "Clomipramine",
+                category: "mental-health",
+                usage: "Treats OCD, depression",
+                priceRange: "₹60-150 per strip",
+                alternatives: [
+                    { name: "Clomipramine (Generic)", price: "₹25-65" },
+                    { name: "Clofranil", price: "₹30-70" },
+                    { name: "Anafranil", price: "₹35-75" }
+                ]
+            },
+            {
+                brand: "Haldol",
+                generic: "Haloperidol",
+                category: "mental-health",
+                usage: "Treats schizophrenia, acute psychosis",
+                priceRange: "₹30-70 per strip",
+                alternatives: [
+                    { name: "Haloperidol (Generic)", price: "₹12-28" },
+                    { name: "Serenace", price: "₹15-32" },
+                    { name: "Haldol", price: "₹18-35" }
+                ]
+            },
+            {
+                brand: "Risperdal",
+                generic: "Risperidone",
+                category: "mental-health",
+                usage: "Treats schizophrenia, bipolar disorder",
+                priceRange: "₹80-200 per strip",
+                alternatives: [
+                    { name: "Risperidone (Generic)", price: "₹35-85" },
+                    { name: "Risdone", price: "₹40-95" },
+                    { name: "Risperdal", price: "₹45-100" },
+                    { name: "Risnia", price: "₹38-90" }
+                ]
+            },
+            {
+                brand: "Clozaril",
+                generic: "Clozapine",
+                category: "mental-health",
+                usage: "Treats resistant schizophrenia",
+                priceRange: "₹100-250 per strip",
+                alternatives: [
+                    { name: "Clozapine (Generic)", price: "₹45-110" },
+                    { name: "Clozaril", price: "₹55-130" },
+                    { name: "Sizopin", price: "₹50-120" }
+                ]
+            },
+            {
+                brand: "Lithium",
+                generic: "Lithium",
+                category: "mental-health",
+                usage: "Treats bipolar disorder, mania",
+                priceRange: "₹30-70 per strip",
+                alternatives: [
+                    { name: "Lithium Carbonate (Generic)", price: "₹12-28" },
+                    { name: "Licab", price: "₹15-32" },
+                    { name: "Camcolit", price: "₹18-35" }
+                ]
+            },
+            {
+                brand: "Ativan",
+                generic: "Lorazepam",
+                category: "mental-health",
+                usage: "Treats anxiety, insomnia, seizures",
+                priceRange: "₹40-100 per strip",
+                alternatives: [
+                    { name: "Lorazepam (Generic)", price: "₹18-42" },
+                    { name: "Ativan", price: "₹22-48" },
+                    { name: "Lorazep", price: "₹20-45" },
+                    { name: "Larpose", price: "₹25-50" }
+                ]
+            },
+            {
+                brand: "Lonazep",
+                generic: "Clonazepam",
+                category: "mental-health",
+                usage: "Treats seizures, panic disorder",
+                priceRange: "₹30-80 per strip",
+                alternatives: [
+                    { name: "Clonazepam (Generic)", price: "₹12-32" },
+                    { name: "Lonazep", price: "₹15-38" },
+                    { name: "Klonopin", price: "₹18-42" },
+                    { name: "Clonium", price: "₹14-35" }
+                ]
+            },
+            {
+                brand: "Frisium",
+                generic: "Clobazam",
+                category: "mental-health",
+                usage: "Treats epilepsy, anxiety",
+                priceRange: "₹60-150 per strip",
+                alternatives: [
+                    { name: "Clobazam (Generic)", price: "₹25-65" },
+                    { name: "Frisium", price: "₹30-75" },
+                    { name: "Cloba", price: "₹28-70" }
+                ]
+            },
+            {
+                brand: "Tegretol",
+                generic: "Carbamazepine",
+                category: "mental-health",
+                usage: "Treats epilepsy, nerve pain, bipolar disorder",
+                priceRange: "₹40-100 per strip",
+                alternatives: [
+                    { name: "Carbamazepine (Generic)", price: "₹18-42" },
+                    { name: "Tegretol", price: "₹22-48" },
+                    { name: "Tegrital", price: "₹20-45" },
+                    { name: "Mazetol", price: "₹25-50" }
+                ]
+            },
+            {
+                brand: "Dilantin",
+                generic: "Phenytoin",
+                category: "mental-health",
+                usage: "Treats and prevents seizures",
+                priceRange: "₹20-50 per strip",
+                alternatives: [
+                    { name: "Phenytoin (Generic)", price: "₹10-22" },
+                    { name: "Epsolin", price: "₹12-25" },
+                    { name: "Dilantin", price: "₹15-30" }
+                ]
+            },
+            {
+                brand: "Encorate",
+                generic: "Sodium Valproate",
+                category: "mental-health",
+                usage: "Treats epilepsy, bipolar disorder, prevents migraine",
+                priceRange: "₹60-150 per strip",
+                alternatives: [
+                    { name: "Sodium Valproate (Generic)", price: "₹25-65" },
+                    { name: "Encorate", price: "₹30-75" },
+                    { name: "Valprol", price: "₹28-70" },
+                    { name: "Valproate", price: "₹32-78" }
+                ]
+            },
+            {
+                brand: "Levera",
+                generic: "Levetiracetam",
+                category: "mental-health",
+                usage: "Treats epilepsy, prevents seizures",
+                priceRange: "₹100-250 per strip",
+                alternatives: [
+                    { name: "Levetiracetam (Generic)", price: "₹45-110" },
+                    { name: "Keppra", price: "₹60-140" },
+                    { name: "Levera", price: "₹50-120" },
+                    { name: "Levo", price: "₹55-130" }
+                ]
+            },
+            {
+                brand: "Donep",
+                generic: "Donepezil",
+                category: "mental-health",
+                usage: "Treats Alzheimer's disease, improves memory",
+                priceRange: "₹100-250 per strip",
+                alternatives: [
+                    { name: "Donepezil (Generic)", price: "₹45-110" },
+                    { name: "Aricept", price: "₹60-140" },
+                    { name: "Donep", price: "₹50-120" },
+                    { name: "Cognex", price: "₹55-130" }
+                ]
+            },
+            {
+                brand: "Pacitane",
+                generic: "Trihexyphenidyl",
+                category: "mental-health",
+                usage: "Treats Parkinson's disease symptoms",
+                priceRange: "₹20-50 per strip",
+                alternatives: [
+                    { name: "Trihexyphenidyl (Generic)", price: "₹10-22" },
+                    { name: "Pacitane", price: "₹12-25" },
+                    { name: "Artane", price: "₹15-30" }
+                ]
+            },
+            {
+                brand: "Asthalin",
+                generic: "Salbutamol",
+                category: "cold-cough",
+                usage: "Treats asthma, COPD, opens airways",
+                priceRange: "₹50-120 per inhaler",
+                alternatives: [
+                    { name: "Salbutamol (Generic)", price: "₹25-60" },
+                    { name: "Ventolin", price: "₹30-70" },
+                    { name: "Asthalin", price: "₹28-65" },
+                    { name: "Derihaler", price: "₹32-75" }
+                ]
+            },
+            {
+                brand: "Budecort",
+                generic: "Budesonide",
+                category: "cold-cough",
+                usage: "Treats asthma, allergic rhinitis, COPD",
+                priceRange: "₹200-450 per inhaler",
+                alternatives: [
+                    { name: "Budesonide (Generic)", price: "₹100-220" },
+                    { name: "Budecort", price: "₹120-250" },
+                    { name: "Pulmicort", price: "₹150-300" }
+                ]
+            },
+            {
+                brand: "Ipravent",
+                generic: "Ipratropium",
+                category: "cold-cough",
+                usage: "Treats COPD, asthma, opens airways",
+                priceRange: "₹150-350 per inhaler",
+                alternatives: [
+                    { name: "Ipratropium (Generic)", price: "₹80-180" },
+                    { name: "Atrovent", price: "₹100-220" },
+                    { name: "Ipravent", price: "₹90-200" }
+                ]
+            },
+            {
+                brand: "Tiova",
+                generic: "Tiotropium",
+                category: "cold-cough",
+                usage: "Treats COPD, prevents breathing difficulties",
+                priceRange: "₹300-600 per inhaler",
+                alternatives: [
+                    { name: "Tiotropium (Generic)", price: "₹150-300" },
+                    { name: "Spiriva", price: "₹200-400" },
+                    { name: "Tiova", price: "₹180-350" }
+                ]
+            },
+            {
+                brand: "Avil",
+                generic: "Pheniramine",
+                category: "cold-cough",
+                usage: "Treats allergies, hay fever, itching",
+                priceRange: "₹20-50 per strip",
+                alternatives: [
+                    { name: "Pheniramine (Generic)", price: "₹10-22" },
+                    { name: "Avil", price: "₹12-25" },
+                    { name: "Phenergan", price: "₹15-30" }
+                ]
+            },
+            {
+                brand: "Unwanted 72",
+                generic: "Levonorgestrel",
+                category: "womens-health",
+                usage: "Emergency contraceptive pill",
+                priceRange: "₹30-100 per tablet",
+                alternatives: [
+                    { name: "Levonorgestrel (Generic)", price: "₹15-40" },
+                    { name: "i-Pill", price: "₹20-50" },
+                    { name: "Unwanted 72", price: "₹25-60" }
+                ]
+            },
+            {
+                brand: "Clomid",
+                generic: "Clomiphene Citrate",
+                category: "womens-health",
+                usage: "Treats female infertility, induces ovulation",
+                priceRange: "₹100-250 per strip",
+                alternatives: [
+                    { name: "Clomiphene (Generic)", price: "₹45-110" },
+                    { name: "Siphene", price: "₹55-130" },
+                    { name: "Clomid", price: "₹60-140" }
+                ]
+            },
+            {
+                brand: "Neo-Mercazole",
+                generic: "Carbimazole",
+                category: "vitamins",
+                usage: "Treats hyperthyroidism (overactive thyroid)",
+                priceRange: "₹60-140 per strip",
+                alternatives: [
+                    { name: "Carbimazole (Generic)", price: "₹25-60" },
+                    { name: "Neo-Mercazole", price: "₹30-70" },
+                    { name: "Carbima", price: "₹28-65" }
+                ]
+            },
+            {
+                brand: "Provera",
+                generic: "Medroxyprogesterone Acetate",
+                category: "womens-health",
+                usage: "Treats menstrual disorders, endometriosis",
+                priceRange: "₹80-180 per strip",
+                alternatives: [
+                    { name: "MPA (Generic)", price: "₹35-75" },
+                    { name: "Provera", price: "₹40-85" },
+                    { name: "Meprate", price: "₹38-80" }
+                ]
+            },
+            {
+                brand: "Pyridoxine",
+                generic: "Pyridoxine (Vitamin B6)",
+                category: "vitamins",
+                usage: "Treats vitamin B6 deficiency, nausea in pregnancy",
+                priceRange: "₹20-50 per strip",
+                alternatives: [
+                    { name: "Vitamin B6 (Generic)", price: "₹10-22" },
+                    { name: "Pyridoxine HCl", price: "₹12-25" },
+                    { name: "Benadon", price: "₹15-30" }
+                ]
+            },
+            {
+                brand: "Thiamine",
+                generic: "Thiamine (Vitamin B1)",
+                category: "vitamins",
+                usage: "Treats vitamin B1 deficiency, beriberi",
+                priceRange: "₹15-40 per strip",
+                alternatives: [
+                    { name: "Vitamin B1 (Generic)", price: "₹8-18" },
+                    { name: "Thiamine HCl", price: "₹10-20" },
+                    { name: "Benerva", price: "₹12-25" }
+                ]
+            },
+            {
+                brand: "Riboflavin",
+                generic: "Riboflavin (Vitamin B2)",
+                category: "vitamins",
+                usage: "Treats vitamin B2 deficiency, migraine prevention",
+                priceRange: "₹20-50 per strip",
+                alternatives: [
+                    { name: "Vitamin B2 (Generic)", price: "₹10-22" },
+                    { name: "Riboflavin", price: "₹12-25" }
+                ]
+            },
+            {
+                brand: "Vitamin K",
+                generic: "Phytomenadione (Vitamin K1)",
+                category: "vitamins",
+                usage: "Treats vitamin K deficiency, prevents bleeding",
+                priceRange: "₹30-80 per strip",
+                alternatives: [
+                    { name: "Vitamin K (Generic)", price: "₹15-35" },
+                    { name: "Aquamephyton", price: "₹18-40" },
+                    { name: "Mephyton", price: "₹20-45" }
+                ]
+            },
+            {
+                brand: "Zinconia",
+                generic: "Zinc Sulphate",
+                category: "vitamins",
+                usage: "Treats zinc deficiency, aids wound healing",
+                priceRange: "₹30-70 per strip",
+                alternatives: [
+                    { name: "Zinc Sulphate (Generic)", price: "₹12-28" },
+                    { name: "Zincovit", price: "₹15-32" },
+                    { name: "Z&D", price: "₹18-35" }
+                ]
+            },
+            {
+                brand: "Hydroxocobalamin",
+                generic: "Hydroxocobalamin (Vitamin B12)",
+                category: "vitamins",
+                usage: "Treats vitamin B12 deficiency, pernicious anemia",
+                priceRange: "₹100-250 per injection",
+                alternatives: [
+                    { name: "Vitamin B12 (Generic)", price: "₹45-110" },
+                    { name: "Methylcobalamin", price: "₹50-120" },
+                    { name: "Cyanocobalamin", price: "₹40-100" }
+                ]
+            },
+            {
+                brand: "Candid",
+                generic: "Clotrimazole",
+                category: "skin",
+                usage: "Treats fungal skin infections, vaginal yeast infections",
+                priceRange: "₹40-100 per tube",
+                alternatives: [
+                    { name: "Clotrimazole (Generic)", price: "₹18-42" },
+                    { name: "Candid", price: "₹22-48" },
+                    { name: "Canesten", price: "₹25-55" },
+                    { name: "Clotrin", price: "₹20-45" }
+                ]
+            },
+            {
+                brand: "Mupirocin",
+                generic: "Mupirocin",
+                category: "skin",
+                usage: "Treats bacterial skin infections, impetigo",
+                priceRange: "₹60-150 per tube",
+                alternatives: [
+                    { name: "Mupirocin (Generic)", price: "₹25-65" },
+                    { name: "T-Bact", price: "₹30-75" },
+                    { name: "Bactroban", price: "₹35-80" }
+                ]
+            },
+            {
+                brand: "Permethrin",
+                generic: "Permethrin",
+                category: "skin",
+                usage: "Treats scabies, head lice",
+                priceRange: "₹100-250 per bottle",
+                alternatives: [
+                    { name: "Permethrin (Generic)", price: "₹45-110" },
+                    { name: "Elimite", price: "₹55-130" },
+                    { name: "Permitil", price: "₹50-120" }
+                ]
+            },
+            {
+                brand: "Persol AC",
+                generic: "Benzoyl Peroxide",
+                category: "skin",
+                usage: "Treats acne",
+                priceRange: "₹100-250 per tube",
+                alternatives: [
+                    { name: "Benzoyl Peroxide (Generic)", price: "₹45-110" },
+                    { name: "Benzac", price: "₹55-130" },
+                    { name: "Persol", price: "₹50-120" },
+                    { name: "Acnestar", price: "₹60-140" }
+                ]
+            },
+            {
+                brand: "Calamine Lotion",
+                generic: "Calamine",
+                category: "skin",
+                usage: "Soothes itching, sunburn, minor skin irritations",
+                priceRange: "₹40-100 per bottle",
+                alternatives: [
+                    { name: "Calamine (Generic)", price: "₹20-45" },
+                    { name: "Caladryl", price: "₹25-55" },
+                    { name: "Lacto Calamine", price: "₹30-60" }
+                ]
+            },
+            {
+                brand: "Fucidin",
+                generic: "Fusidic Acid",
+                category: "skin",
+                usage: "Treats bacterial skin infections",
+                priceRange: "₹150-350 per tube",
+                alternatives: [
+                    { name: "Fusidic Acid (Generic)", price: "₹70-160" },
+                    { name: "Fucidin", price: "₹80-180" },
+                    { name: "Fudic", price: "₹75-170" }
+                ]
+            },
+            {
+                brand: "Silverex",
+                generic: "Silver Sulphadiazine",
+                category: "skin",
+                usage: "Treats and prevents infection in burns",
+                priceRange: "₹80-200 per tube",
+                alternatives: [
+                    { name: "Silver Sulphadiazine (Generic)", price: "₹35-85" },
+                    { name: "Silverex", price: "₹40-95" },
+                    { name: "Burnol Plus", price: "₹45-100" },
+                    { name: "SSD", price: "₹38-90" }
+                ]
+            },
+            {
+                brand: "Misoprost",
+                generic: "Misoprostol",
+                category: "acidity",
+                usage: "Prevents stomach ulcers, induces labor",
+                priceRange: "₹100-250 per strip",
+                alternatives: [
+                    { name: "Misoprostol (Generic)", price: "₹45-110" },
+                    { name: "Cytotec", price: "₹60-140" },
+                    { name: "Misoprost", price: "₹50-120" }
+                ]
+            },
+            {
+                brand: "Pause",
+                generic: "Tranexamic Acid",
+                category: "acidity",
+                usage: "Controls heavy menstrual bleeding, prevents bleeding",
+                priceRange: "₹60-150 per strip",
+                alternatives: [
+                    { name: "Tranexamic Acid (Generic)", price: "₹25-65" },
+                    { name: "Pause", price: "₹30-75" },
+                    { name: "Tranexa", price: "₹35-80" },
+                    { name: "Trapic", price: "₹32-78" }
+                ]
+            },
+            {
+                brand: "Zolfresh",
+                generic: "Zolpidem",
+                category: "mental-health",
+                usage: "Treats insomnia, helps fall asleep",
+                priceRange: "₹80-200 per strip",
+                alternatives: [
+                    { name: "Zolpidem (Generic)", price: "₹35-85" },
+                    { name: "Ambien", price: "₹45-100" },
+                    { name: "Zolfresh", price: "₹40-95" },
+                    { name: "Stilnox", price: "₹50-110" }
+                ]
+            },
+            {
+                brand: "Dolonex",
+                generic: "Piroxicam",
+                category: "fever-pain",
+                usage: "Treats pain, inflammation, arthritis",
+                priceRange: "₹30-70 per strip",
+                alternatives: [
+                    { name: "Piroxicam (Generic)", price: "₹12-28" },
+                    { name: "Feldene", price: "₹15-32" },
+                    { name: "Dolonex", price: "₹18-35" },
+                    { name: "Pirox", price: "₹14-30" }
+                ]
+            },
+            {
+                brand: "Zerodol",
+                generic: "Aceclofenac",
+                category: "fever-pain",
+                usage: "Treats pain, inflammation, arthritis, dental pain",
+                priceRange: "₹40-90 per strip",
+                alternatives: [
+                    { name: "Aceclofenac (Generic)", price: "₹18-38" },
+                    { name: "Zerodol", price: "₹22-45" },
+                    { name: "Hifenac", price: "₹20-42" },
+                    { name: "Acenac", price: "₹25-48" },
+                    { name: "Dolowin", price: "₹19-40" }
+                ]
+            },
+            {
+                brand: "Serratiopeptidase",
+                generic: "Serratiopeptidase",
+                category: "fever-pain",
+                usage: "Reduces swelling, inflammation after surgery or injury",
+                priceRange: "₹30-80 per strip",
+                alternatives: [
+                    { name: "Serratiopeptidase (Generic)", price: "₹12-32" },
+                    { name: "Serratio", price: "₹15-38" },
+                    { name: "Enzomac", price: "₹18-42" },
+                    { name: "Serr", price: "₹14-35" }
+                ]
+            },
+            {
+                brand: "Lornoxicam",
+                generic: "Lornoxicam",
+                category: "fever-pain",
+                usage: "Treats acute pain, post-operative pain",
+                priceRange: "₹60-140 per strip",
+                alternatives: [
+                    { name: "Lornoxicam (Generic)", price: "₹25-60" },
+                    { name: "Lorsaid", price: "₹30-68" },
+                    { name: "Lornact", price: "₹28-65" },
+                    { name: "Acabel", price: "₹32-70" }
+                ]
+            },
+            {
+                brand: "Arcoxia",
+                generic: "Etoricoxib",
+                category: "fever-pain",
+                usage: "Treats arthritis, gout, pain, inflammation",
+                priceRange: "₹100-250 per strip",
+                alternatives: [
+                    { name: "Etoricoxib (Generic)", price: "₹45-110" },
+                    { name: "Etody", price: "₹55-130" },
+                    { name: "Nucoxia", price: "₹60-140" },
+                    { name: "Etova", price: "₹50-120" },
+                    { name: "Etoshine", price: "₹58-135" }
+                ]
+            },
+            {
+                brand: "Alprax",
+                generic: "Alprazolam",
+                category: "mental-health",
+                usage: "Treats anxiety, panic disorder",
+                priceRange: "₹20-60 per strip",
+                alternatives: [
+                    { name: "Alprazolam (Generic)", price: "₹10-25" },
+                    { name: "Alprax", price: "₹12-30" },
+                    { name: "Alzolam", price: "₹15-35" },
+                    { name: "Restyl", price: "₹14-32" },
+                    { name: "Trika", price: "₹11-28" }
+                ]
+            },
+            {
+                brand: "Calmpose",
+                generic: "Diazepam",
+                category: "mental-health",
+                usage: "Treats anxiety, muscle spasms, seizures",
+                priceRange: "₹15-40 per strip",
+                alternatives: [
+                    { name: "Diazepam (Generic)", price: "₹8-18" },
+                    { name: "Valium", price: "₹10-22" },
+                    { name: "Calmpose", price: "₹12-25" },
+                    { name: "Diastat", price: "₹9-20" }
+                ]
+            },
+            {
+                brand: "Ebast",
+                generic: "Ebastine",
+                category: "cold-cough",
+                usage: "Treats allergic rhinitis, chronic urticaria",
+                priceRange: "₹60-140 per strip",
+                alternatives: [
+                    { name: "Ebastine (Generic)", price: "₹25-60" },
+                    { name: "Ebast", price: "₹30-70" },
+                    { name: "Ebatrol", price: "₹28-65" },
+                    { name: "Ebastel", price: "₹32-72" }
+                ]
+            },
+            {
+                brand: "Lorfast",
+                generic: "Loratadine",
+                category: "cold-cough",
+                usage: "Treats allergies, hay fever, hives - non-drowsy",
+                priceRange: "₹30-80 per strip",
+                alternatives: [
+                    { name: "Loratadine (Generic)", price: "₹12-32" },
+                    { name: "Claritin", price: "₹15-38" },
+                    { name: "Lorfast", price: "₹18-42" },
+                    { name: "Lorate", price: "₹14-35" },
+                    { name: "Alergina", price: "₹16-40" }
+                ]
+            },
+            {
+                brand: "Dazit",
+                generic: "Desloratadine",
+                category: "cold-cough",
+                usage: "Treats allergies, hay fever - improved version of Loratadine",
+                priceRange: "₹60-150 per strip",
+                alternatives: [
+                    { name: "Desloratadine (Generic)", price: "₹25-65" },
+                    { name: "Aerius", price: "₹35-80" },
+                    { name: "Dazit", price: "₹30-75" },
+                    { name: "Desorid", price: "₹32-78" },
+                    { name: "Deslor", price: "₹28-70" }
+                ]
+            },
+            {
+                brand: "Rupatadine",
+                generic: "Rupatadine",
+                category: "cold-cough",
+                usage: "Treats allergies, urticaria, allergic rhinitis",
+                priceRange: "₹80-180 per strip",
+                alternatives: [
+                    { name: "Rupatadine (Generic)", price: "₹35-75" },
+                    { name: "Rupahist", price: "₹40-85" },
+                    { name: "Rupar", price: "₹38-80" },
+                    { name: "Rupall", price: "₹42-88" }
+                ]
+            },
+            {
+                brand: "Olopatadine",
+                generic: "Olopatadine",
+                category: "cold-cough",
+                usage: "Treats allergic conjunctivitis, allergic rhinitis",
+                priceRange: "₹100-250 per strip",
+                alternatives: [
+                    { name: "Olopatadine (Generic)", price: "₹45-110" },
+                    { name: "Olopat", price: "₹55-130" },
+                    { name: "Patanol", price: "₹60-140" },
+                    { name: "Winolap", price: "₹50-120" }
+                ]
+            },
+            {
+                brand: "Gabapin",
+                generic: "Gabapentin",
+                category: "fever-pain",
+                usage: "Treats nerve pain, neuropathy, seizures, shingles pain",
+                priceRange: "₹80-200 per strip",
+                alternatives: [
+                    { name: "Gabapentin (Generic)", price: "₹35-85" },
+                    { name: "Gabapin", price: "₹45-100" },
+                    { name: "Neurontin", price: "₹50-110" },
+                    { name: "Nervijen", price: "₹40-95" },
+                    { name: "Gaba", price: "₹42-98" }
+                ]
+            },
+            {
+                brand: "Pregablin",
+                generic: "Pregabalin",
+                category: "fever-pain",
+                usage: "Treats nerve pain, fibromyalgia, anxiety, seizures",
+                priceRange: "₹150-350 per strip",
+                alternatives: [
+                    { name: "Pregabalin (Generic)", price: "₹70-160" },
+                    { name: "Lyrica", price: "₹90-200" },
+                    { name: "Pregablin", price: "₹80-180" },
+                    { name: "Nervz", price: "₹75-170" },
+                    { name: "Pregalin", price: "₹85-190" }
+                ]
+            },
+            {
+                brand: "Roxid",
+                generic: "Roxithromycin",
+                category: "antibiotics",
+                usage: "Treats respiratory tract infections, skin infections",
+                priceRange: "₹60-150 per strip",
+                alternatives: [
+                    { name: "Roxithromycin (Generic)", price: "₹25-65" },
+                    { name: "Roxid", price: "₹30-75" },
+                    { name: "Suprax", price: "₹35-80" },
+                    { name: "Roxil", price: "₹28-70" },
+                    { name: "Roxinga", price: "₹32-78" }
+                ]
+            },
+            {
+                brand: "Rcifax",
+                generic: "Rifaximin",
+                category: "antibiotics",
+                usage: "Treats traveler's diarrhea, IBS, hepatic encephalopathy",
+                priceRange: "₹200-500 per strip",
+                alternatives: [
+                    { name: "Rifaximin (Generic)", price: "₹90-220" },
+                    { name: "Rcifax", price: "₹120-280" },
+                    { name: "Gutwin", price: "₹100-250" },
+                    { name: "Xifaxan", price: "₹150-350" },
+                    { name: "Ciboz", price: "₹110-260" }
+                ]
+            },
+            {
+                brand: "Cephalexin",
+                generic: "Cephalexin",
+                category: "antibiotics",
+                usage: "Treats bacterial infections, skin infections, UTI",
+                priceRange: "₹40-100 per strip",
+                alternatives: [
+                    { name: "Cephalexin (Generic)", price: "₹18-42" },
+                    { name: "Keflex", price: "₹22-50" },
+                    { name: "Cefalexin", price: "₹20-45" },
+                    { name: "Sporidex", price: "₹25-55" },
+                    { name: "Cefadur", price: "₹19-48" }
+                ]
+            },
+            {
+                brand: "Feburic",
+                generic: "Febuxostat",
+                category: "fever-pain",
+                usage: "Treats gout, lowers uric acid - better than Allopurinol",
+                priceRange: "₹150-350 per strip",
+                alternatives: [
+                    { name: "Febuxostat (Generic)", price: "₹70-160" },
+                    { name: "Uloric", price: "₹90-200" },
+                    { name: "Feburic", price: "₹80-180" },
+                    { name: "Febuxor", price: "₹75-170" },
+                    { name: "Zurig", price: "₹85-190" }
+                ]
+            },
+            {
+                brand: "Diacerein",
+                generic: "Diacerein",
+                category: "fever-pain",
+                usage: "Treats osteoarthritis, knee pain, joint degeneration",
+                priceRange: "₹100-250 per strip",
+                alternatives: [
+                    { name: "Diacerein (Generic)", price: "₹45-110" },
+                    { name: "Artrodar", price: "₹55-130" },
+                    { name: "Osteocerin", price: "₹60-140" },
+                    { name: "Arthrella", price: "₹50-120" }
+                ]
+            },
+            {
+                brand: "Pioz",
+                generic: "Pioglitazone",
+                category: "diabetes",
+                usage: "Treats Type 2 diabetes, improves insulin sensitivity",
+                priceRange: "₹80-200 per strip",
+                alternatives: [
+                    { name: "Pioglitazone (Generic)", price: "₹35-85" },
+                    { name: "Pioz", price: "₹45-100" },
+                    { name: "Glizone", price: "₹40-95" },
+                    { name: "Piopar", price: "₹42-98" },
+                    { name: "Actose", price: "₹38-90" }
+                ]
+            },
+            {
+                brand: "Cefpodoxime",
+                generic: "Cefpodoxime Proxetil",
+                category: "antibiotics",
+                usage: "Treats bacterial infections, pneumonia, bronchitis",
+                priceRange: "₹100-250 per strip",
+                alternatives: [
+                    { name: "Cefpodoxime (Generic)", price: "₹45-110" },
+                    { name: "Cepodem", price: "₹55-130" },
+                    { name: "O-Cef", price: "₹60-140" },
+                    { name: "Gudcef", price: "₹50-120" },
+                    { name: "Podowok", price: "₹52-125" }
+                ]
+            },
+            {
+                brand: "Rabicip",
+                generic: "Rabeprazole",
+                category: "acidity",
+                usage: "Treats GERD, acidity, stomach ulcers",
+                priceRange: "₹40-100 per strip",
+                alternatives: [
+                    { name: "Rabeprazole (Generic)", price: "₹18-42" },
+                    { name: "Razo", price: "₹22-50" },
+                    { name: "Rabicip", price: "₹25-55" },
+                    { name: "Happi", price: "₹20-48" },
+                    { name: "Rabeloc", price: "₹24-52" }
+                ]
+            },
+            {
+                brand: "Itopride",
+                generic: "Itopride",
+                category: "acidity",
+                usage: "Treats functional dyspepsia, GERD, nausea",
+                priceRange: "₹60-150 per strip",
+                alternatives: [
+                    { name: "Itopride (Generic)", price: "₹25-65" },
+                    { name: "Ganaton", price: "₹35-80" },
+                    { name: "Itopra", price: "₹30-75" },
+                    { name: "Itomed", price: "₹32-78" }
+                ]
+            },
+            {
+                brand: "Levosulpiride",
+                generic: "Levosulpiride",
+                category: "acidity",
+                usage: "Treats dyspepsia, GERD, IBS, depression",
+                priceRange: "₹50-120 per strip",
+                alternatives: [
+                    { name: "Levosulpiride (Generic)", price: "₹20-50" },
+                    { name: "Levopride", price: "₹25-58" },
+                    { name: "Levotroy", price: "₹28-62" },
+                    { name: "Lesuride", price: "₹22-55" }
+                ]
+            },
+            {
+                brand: "Ranitidine",
+                generic: "Ranitidine",
+                category: "acidity",
+                usage: "Reduces stomach acid, treats ulcers, heartburn",
+                priceRange: "₹25-60 per strip",
+                alternatives: [
+                    { name: "Ranitidine (Generic)", price: "₹10-25" },
+                    { name: "Rantac", price: "₹12-30" },
+                    { name: "Aciloc", price: "₹15-35" },
+                    { name: "Zinetac", price: "₹14-32" }
+                ]
+            },
+            {
+                brand: "Mucaine",
+                generic: "Oxetacaine + Aluminium Hydroxide + Magnesium",
+                category: "acidity",
+                usage: "Quick relief from acidity, heartburn, stomach pain",
+                priceRange: "₹50-120 per bottle",
+                alternatives: [
+                    { name: "Mucaine Gel", price: "₹30-70" },
+                    { name: "Oxetacaine Gel (Generic)", price: "₹25-60" },
+                    { name: "Mucogel", price: "₹28-65" }
+                ]
+            },
+            // ===== NEW MEDICINES - Eye & Ear =====
+            {
+                brand: "Moxiflox Eye Drop",
+                generic: "Moxifloxacin Eye Drops",
+                category: "eye-ear",
+                usage: "Treats bacterial eye infections, conjunctivitis",
+                priceRange: "₹80-180 per bottle",
+                alternatives: [
+                    { name: "Moxifloxacin Eye (Generic)", price: "₹35-75" },
+                    { name: "Milflox", price: "₹40-85" },
+                    { name: "Moxicip", price: "₹45-90" },
+                    { name: "Vigamox", price: "₹50-100" }
+                ]
+            },
+            {
+                brand: "Genteal",
+                generic: "Hydroxypropyl Methylcellulose",
+                category: "eye-ear",
+                usage: "Artificial tears for dry eyes",
+                priceRange: "₹100-250 per bottle",
+                alternatives: [
+                    { name: "HPMC Eye Drops (Generic)", price: "₹40-100" },
+                    { name: "Tears Naturale", price: "₹55-120" },
+                    { name: "Refresh Tears", price: "₹50-110" },
+                    { name: "Systane", price: "₹60-130" }
+                ]
+            },
+            {
+                brand: "Lotepred",
+                generic: "Loteprednol Eye Drops",
+                category: "eye-ear",
+                usage: "Treats eye inflammation, allergic conjunctivitis",
+                priceRange: "₹120-280 per bottle",
+                alternatives: [
+                    { name: "Loteprednol (Generic)", price: "₹55-130" },
+                    { name: "Loteflam", price: "₹65-150" },
+                    { name: "Lotepred", price: "₹60-140" }
+                ]
+            },
+            {
+                brand: "Tropicamide",
+                generic: "Tropicamide Eye Drops",
+                category: "eye-ear",
+                usage: "Dilates pupil for eye examination",
+                priceRange: "₹40-100 per bottle",
+                alternatives: [
+                    { name: "Tropicamide (Generic)", price: "₹18-42" },
+                    { name: "Tropicacyl", price: "₹22-50" },
+                    { name: "Mydrum", price: "₹25-55" }
+                ]
+            },
+            {
+                brand: "Timolol",
+                generic: "Timolol Maleate Eye Drops",
+                category: "eye-ear",
+                usage: "Treats glaucoma, reduces eye pressure",
+                priceRange: "₹60-150 per bottle",
+                alternatives: [
+                    { name: "Timolol (Generic)", price: "₹25-60" },
+                    { name: "Glucomol", price: "₹30-70" },
+                    { name: "Iotim", price: "₹28-65" },
+                    { name: "Betimol", price: "₹35-75" }
+                ]
+            },
+            {
+                brand: "Latanoprost",
+                generic: "Latanoprost Eye Drops",
+                category: "eye-ear",
+                usage: "Treats glaucoma, open-angle glaucoma",
+                priceRange: "₹200-500 per bottle",
+                alternatives: [
+                    { name: "Latanoprost (Generic)", price: "₹90-220" },
+                    { name: "Xalatan", price: "₹120-280" },
+                    { name: "Latoprost", price: "₹100-250" },
+                    { name: "9PM", price: "₹110-260" }
+                ]
+            },
+            {
+                brand: "Ciplox Eye/Ear",
+                generic: "Ciprofloxacin Eye/Ear Drops",
+                category: "eye-ear",
+                usage: "Treats bacterial infections of eye and ear",
+                priceRange: "₹30-80 per bottle",
+                alternatives: [
+                    { name: "Ciprofloxacin Drops (Generic)", price: "₹12-30" },
+                    { name: "Ciplox D", price: "₹15-35" },
+                    { name: "Zoxan D", price: "₹18-40" }
+                ]
+            },
+            {
+                brand: "Otrivin",
+                generic: "Xylometazoline Nasal Drops",
+                category: "eye-ear",
+                usage: "Relieves nasal congestion, blocked nose",
+                priceRange: "₹60-120 per bottle",
+                alternatives: [
+                    { name: "Xylometazoline (Generic)", price: "₹25-55" },
+                    { name: "Nasivion", price: "₹30-65" },
+                    { name: "Otrivin", price: "₹35-70" },
+                    { name: "Xylonase", price: "₹28-60" }
+                ]
+            },
+            {
+                brand: "Soliwax",
+                generic: "Paradichlorobenzene Ear Drops",
+                category: "eye-ear",
+                usage: "Softens and removes ear wax",
+                priceRange: "₹50-120 per bottle",
+                alternatives: [
+                    { name: "Waxonil", price: "₹25-60" },
+                    { name: "Soliwax", price: "₹30-70" },
+                    { name: "Dewax", price: "₹28-65" }
+                ]
+            },
+            {
+                brand: "Nepafenac",
+                generic: "Nepafenac Eye Drops",
+                category: "eye-ear",
+                usage: "Treats pain and inflammation after eye surgery",
+                priceRange: "₹150-350 per bottle",
+                alternatives: [
+                    { name: "Nepafenac (Generic)", price: "₹70-160" },
+                    { name: "Nevanac", price: "₹85-200" },
+                    { name: "Nepanide", price: "₹75-180" }
+                ]
+            },
+            // ===== NEW MEDICINES - Women's Health =====
+            {
+                brand: "Susten",
+                generic: "Progesterone",
+                category: "womens-health",
+                usage: "Supports pregnancy, treats menstrual irregularities",
+                priceRange: "₹150-350 per strip",
+                alternatives: [
+                    { name: "Progesterone (Generic)", price: "₹70-160" },
+                    { name: "Susten", price: "₹85-200" },
+                    { name: "Gestofit", price: "₹80-180" },
+                    { name: "Gestone", price: "₹90-210" }
+                ]
+            },
+            {
+                brand: "Primolut N",
+                generic: "Norethisterone",
+                category: "womens-health",
+                usage: "Delays periods, treats menstrual disorders",
+                priceRange: "₹40-100 per strip",
+                alternatives: [
+                    { name: "Norethisterone (Generic)", price: "₹18-42" },
+                    { name: "Regestrone", price: "₹22-50" },
+                    { name: "Primolut N", price: "₹25-55" }
+                ]
+            },
+            {
+                brand: "Mala-D",
+                generic: "Levonorgestrel + Ethinyl Estradiol",
+                category: "womens-health",
+                usage: "Oral contraceptive, birth control",
+                priceRange: "₹10-30 per cycle",
+                alternatives: [
+                    { name: "Mala-N", price: "₹8-20" },
+                    { name: "Ovral L", price: "₹12-25" },
+                    { name: "Novelon", price: "₹15-30" },
+                    { name: "Femilon", price: "₹18-35" }
+                ]
+            },
+            {
+                brand: "Duphaston",
+                generic: "Dydrogesterone",
+                category: "womens-health",
+                usage: "Treats menstrual disorders, supports pregnancy",
+                priceRange: "₹250-500 per strip",
+                alternatives: [
+                    { name: "Dydrogesterone (Generic)", price: "₹120-250" },
+                    { name: "Duphaston", price: "₹150-300" },
+                    { name: "Dydrogest", price: "₹130-270" }
+                ]
+            },
+            {
+                brand: "Letrozole",
+                generic: "Letrozole",
+                category: "womens-health",
+                usage: "Treats breast cancer, induces ovulation for infertility",
+                priceRange: "₹100-250 per strip",
+                alternatives: [
+                    { name: "Letrozole (Generic)", price: "₹45-110" },
+                    { name: "Femara", price: "₹60-140" },
+                    { name: "Letroz", price: "₹50-120" },
+                    { name: "Letoval", price: "₹55-130" }
+                ]
+            },
+            {
+                brand: "Ralista",
+                generic: "Raloxifene",
+                category: "womens-health",
+                usage: "Prevents osteoporosis in postmenopausal women",
+                priceRange: "₹80-200 per strip",
+                alternatives: [
+                    { name: "Raloxifene (Generic)", price: "₹35-85" },
+                    { name: "Evista", price: "₹45-100" },
+                    { name: "Ralista", price: "₹40-95" }
+                ]
+            },
+            // ===== NEW MEDICINES - Heart =====
+            {
+                brand: "Ecosprin",
+                generic: "Aspirin (Low Dose)",
+                category: "heart",
+                usage: "Prevents heart attack, stroke, blood thinner",
+                priceRange: "₹10-30 per strip",
+                nppaPrice: "₹0.65-₹1.70 per tablet",
+                nppaNote: "75mg: ₹0.65 | 150mg: ₹1.70",
+                alternatives: [
+                    { name: "Aspirin (Generic)", price: "₹5-12" },
+                    { name: "Ecosprin", price: "₹6-15" },
+                    { name: "Loprin", price: "₹8-18" },
+                    { name: "Disprin CV", price: "₹7-16" }
+                ]
+            },
+            {
+                brand: "Sorbitrate",
+                generic: "Isosorbide Dinitrate",
+                category: "heart",
+                usage: "Treats angina, chest pain, heart failure",
+                priceRange: "₹20-50 per strip",
+                alternatives: [
+                    { name: "Isosorbide (Generic)", price: "₹8-20" },
+                    { name: "Sorbitrate", price: "₹10-25" },
+                    { name: "Isordil", price: "₹12-28" }
+                ]
+            },
+            {
+                brand: "Nitroglycerin",
+                generic: "Nitroglycerin",
+                category: "heart",
+                usage: "Emergency treatment for angina, chest pain",
+                priceRange: "₹40-100 per strip",
+                alternatives: [
+                    { name: "Nitroglycerin (Generic)", price: "₹18-45" },
+                    { name: "Nitrostat", price: "₹22-55" },
+                    { name: "Angispan", price: "₹20-50" }
+                ]
+            },
+            {
+                brand: "Ranolazine",
+                generic: "Ranolazine",
+                category: "heart",
+                usage: "Treats chronic angina, chest pain",
+                priceRange: "₹150-350 per strip",
+                alternatives: [
+                    { name: "Ranolazine (Generic)", price: "₹70-160" },
+                    { name: "Ranexa", price: "₹90-200" },
+                    { name: "Ranozex", price: "₹80-180" }
+                ]
+            },
+            {
+                brand: "Warfarin",
+                generic: "Warfarin",
+                category: "heart",
+                usage: "Blood thinner, prevents blood clots",
+                priceRange: "₹30-70 per strip",
+                alternatives: [
+                    { name: "Warfarin (Generic)", price: "₹12-30" },
+                    { name: "Warf", price: "₹15-35" },
+                    { name: "Coumadin", price: "₹18-40" }
+                ]
+            },
+            {
+                brand: "Xarelto",
+                generic: "Rivaroxaban",
+                category: "heart",
+                usage: "Blood thinner, prevents stroke, DVT, pulmonary embolism",
+                priceRange: "₹300-700 per strip",
+                alternatives: [
+                    { name: "Rivaroxaban (Generic)", price: "₹150-350" },
+                    { name: "Xeralto", price: "₹180-400" },
+                    { name: "Rivasa", price: "₹160-380" }
+                ]
+            },
+            {
+                brand: "Eliquis",
+                generic: "Apixaban",
+                category: "heart",
+                usage: "Blood thinner, prevents stroke in atrial fibrillation",
+                priceRange: "₹250-600 per strip",
+                alternatives: [
+                    { name: "Apixaban (Generic)", price: "₹120-280" },
+                    { name: "Apigat", price: "₹140-320" },
+                    { name: "Eliquis", price: "₹150-350" }
+                ]
+            },
+            {
+                brand: "Amiodarone",
+                generic: "Amiodarone",
+                category: "heart",
+                usage: "Treats irregular heartbeat, arrhythmia",
+                priceRange: "₹60-150 per strip",
+                alternatives: [
+                    { name: "Amiodarone (Generic)", price: "₹25-65" },
+                    { name: "Cordarone", price: "₹35-80" },
+                    { name: "Amiodar", price: "₹30-70" }
+                ]
+            },
+            // ===== NEW MEDICINES - Skin Care =====
+            {
+                brand: "Tretinoin",
+                generic: "Tretinoin",
+                category: "skin",
+                usage: "Treats acne, anti-aging, skin pigmentation",
+                priceRange: "₹80-200 per tube",
+                alternatives: [
+                    { name: "Tretinoin (Generic)", price: "₹35-85" },
+                    { name: "Retino-A", price: "₹45-100" },
+                    { name: "Retin-A", price: "₹50-110" },
+                    { name: "Tretin", price: "₹40-95" }
+                ]
+            },
+            {
+                brand: "Adapalene",
+                generic: "Adapalene",
+                category: "skin",
+                usage: "Treats acne, blackheads, whiteheads",
+                priceRange: "₹100-250 per tube",
+                alternatives: [
+                    { name: "Adapalene (Generic)", price: "₹45-110" },
+                    { name: "Adaferin", price: "₹55-130" },
+                    { name: "Differin", price: "₹60-140" },
+                    { name: "Deriva", price: "₹50-120" }
+                ]
+            },
+            {
+                brand: "Clobetasol",
+                generic: "Clobetasol Propionate",
+                category: "skin",
+                usage: "Treats severe eczema, psoriasis, dermatitis",
+                priceRange: "₹60-150 per tube",
+                alternatives: [
+                    { name: "Clobetasol (Generic)", price: "₹25-60" },
+                    { name: "Tenovate", price: "₹30-70" },
+                    { name: "Clobeta", price: "₹28-65" },
+                    { name: "Dermovate", price: "₹35-80" }
+                ]
+            },
+            {
+                brand: "Betnovate",
+                generic: "Betamethasone",
+                category: "skin",
+                usage: "Treats eczema, dermatitis, psoriasis, itching",
+                priceRange: "₹40-100 per tube",
+                alternatives: [
+                    { name: "Betamethasone (Generic)", price: "₹18-42" },
+                    { name: "Betnovate", price: "₹22-50" },
+                    { name: "Diprovate", price: "₹25-55" },
+                    { name: "Betasone", price: "₹20-48" }
+                ]
+            },
+            {
+                brand: "Panderm",
+                generic: "Clobetasol + Neomycin + Miconazole",
+                category: "skin",
+                usage: "Treats fungal and bacterial skin infections with inflammation",
+                priceRange: "₹80-180 per tube",
+                alternatives: [
+                    { name: "Quadriderm", price: "₹40-90" },
+                    { name: "Panderm", price: "₹45-100" },
+                    { name: "Surfaz SN", price: "₹35-85" },
+                    { name: "Ring Guard", price: "₹30-70" }
+                ]
+            },
+            {
+                brand: "Ketoconazole Cream",
+                generic: "Ketoconazole",
+                category: "skin",
+                usage: "Treats fungal infections, dandruff, ringworm",
+                priceRange: "₹60-150 per tube",
+                alternatives: [
+                    { name: "Ketoconazole (Generic)", price: "₹25-60" },
+                    { name: "Nizoral", price: "₹35-80" },
+                    { name: "KZ Cream", price: "₹30-70" },
+                    { name: "Ketomac", price: "₹28-65" }
+                ]
+            },
+            {
+                brand: "Luliconazole",
+                generic: "Luliconazole",
+                category: "skin",
+                usage: "Treats ringworm, fungal skin infections, athlete's foot",
+                priceRange: "₹100-250 per tube",
+                alternatives: [
+                    { name: "Luliconazole (Generic)", price: "₹45-110" },
+                    { name: "Lulican", price: "₹55-130" },
+                    { name: "Lulifin", price: "₹50-120" },
+                    { name: "Luliford", price: "₹60-140" }
+                ]
+            },
+            {
+                brand: "Soframycin",
+                generic: "Framycetin",
+                category: "skin",
+                usage: "Treats minor cuts, wounds, skin infections",
+                priceRange: "₹40-90 per tube",
+                alternatives: [
+                    { name: "Framycetin (Generic)", price: "₹18-40" },
+                    { name: "Soframycin", price: "₹22-50" },
+                    { name: "Neosporin", price: "₹25-55" }
+                ]
+            },
+            // ===== NEW MEDICINES - Diabetes =====
+            {
+                brand: "Jardiance",
+                generic: "Empagliflozin",
+                category: "diabetes",
+                usage: "Treats Type 2 diabetes, reduces heart failure risk",
+                priceRange: "₹300-600 per strip",
+                alternatives: [
+                    { name: "Empagliflozin (Generic)", price: "₹150-300" },
+                    { name: "Gibtulio", price: "₹170-350" },
+                    { name: "Empaone", price: "₹160-330" }
+                ]
+            },
+            {
+                brand: "Forxiga",
+                generic: "Dapagliflozin",
+                category: "diabetes",
+                usage: "Treats Type 2 diabetes, reduces heart failure risk",
+                priceRange: "₹250-500 per strip",
+                alternatives: [
+                    { name: "Dapagliflozin (Generic)", price: "₹120-250" },
+                    { name: "Oxra", price: "₹140-280" },
+                    { name: "Dapanorm", price: "₹130-270" }
+                ]
+            },
+            {
+                brand: "Galvus",
+                generic: "Vildagliptin",
+                category: "diabetes",
+                usage: "Controls blood sugar in Type 2 diabetes",
+                priceRange: "₹200-400 per strip",
+                alternatives: [
+                    { name: "Vildagliptin (Generic)", price: "₹90-200" },
+                    { name: "Galvus", price: "₹110-250" },
+                    { name: "Vysov", price: "₹100-230" },
+                    { name: "Jalra", price: "₹105-240" }
+                ]
+            },
+            {
+                brand: "Trajenta",
+                generic: "Linagliptin",
+                category: "diabetes",
+                usage: "Controls blood sugar, safe for kidney patients",
+                priceRange: "₹300-600 per strip",
+                alternatives: [
+                    { name: "Linagliptin (Generic)", price: "₹150-300" },
+                    { name: "Trajenta", price: "₹180-350" },
+                    { name: "Linares", price: "₹160-330" }
+                ]
+            },
+            {
+                brand: "Glyxambi",
+                generic: "Empagliflozin + Linagliptin",
+                category: "diabetes",
+                usage: "Combination diabetes drug for better sugar control",
+                priceRange: "₹400-800 per strip",
+                alternatives: [
+                    { name: "Empaglina", price: "₹200-400" },
+                    { name: "Glyxambi", price: "₹250-500" }
+                ]
+            },
+            {
+                brand: "Glynase",
+                generic: "Glipizide",
+                category: "diabetes",
+                usage: "Stimulates insulin release in Type 2 diabetes",
+                priceRange: "₹30-80 per strip",
+                alternatives: [
+                    { name: "Glipizide (Generic)", price: "₹12-32" },
+                    { name: "Glucotrol", price: "₹15-38" },
+                    { name: "Glynase", price: "₹18-40" },
+                    { name: "Glide", price: "₹14-35" }
+                ]
+            },
+            {
+                brand: "Victoza",
+                generic: "Liraglutide",
+                category: "diabetes",
+                usage: "Injectable for Type 2 diabetes, promotes weight loss",
+                priceRange: "₹3000-6000 per pen",
+                alternatives: [
+                    { name: "Liraglutide (Generic)", price: "₹1500-3000" },
+                    { name: "Victoza", price: "₹2000-4000" },
+                    { name: "Lirafit", price: "₹1800-3500" }
+                ]
+            },
+            // ===== NEW MEDICINES - Mental Health =====
+            {
+                brand: "Oleanz",
+                generic: "Olanzapine",
+                category: "mental-health",
+                usage: "Treats schizophrenia, bipolar disorder",
+                priceRange: "₹80-200 per strip",
+                alternatives: [
+                    { name: "Olanzapine (Generic)", price: "₹35-85" },
+                    { name: "Oleanz", price: "₹45-100" },
+                    { name: "Zyprexa", price: "₹55-130" },
+                    { name: "Oliza", price: "₹40-95" }
+                ]
+            },
+            {
+                brand: "Quetiapine",
+                generic: "Quetiapine",
+                category: "mental-health",
+                usage: "Treats schizophrenia, bipolar disorder, depression",
+                priceRange: "₹100-250 per strip",
+                alternatives: [
+                    { name: "Quetiapine (Generic)", price: "₹45-110" },
+                    { name: "Seroquel", price: "₹60-140" },
+                    { name: "Qutan", price: "₹50-120" },
+                    { name: "Qutipin", price: "₹55-130" }
+                ]
+            },
+            {
+                brand: "Venlor",
+                generic: "Venlafaxine",
+                category: "mental-health",
+                usage: "Treats depression, anxiety, panic disorder",
+                priceRange: "₹80-200 per strip",
+                alternatives: [
+                    { name: "Venlafaxine (Generic)", price: "₹35-85" },
+                    { name: "Venlor", price: "₹45-100" },
+                    { name: "Effexor", price: "₹55-130" },
+                    { name: "Veniz", price: "₹40-95" }
+                ]
+            },
+            {
+                brand: "Duloxetine",
+                generic: "Duloxetine",
+                category: "mental-health",
+                usage: "Treats depression, anxiety, nerve pain, fibromyalgia",
+                priceRange: "₹100-250 per strip",
+                alternatives: [
+                    { name: "Duloxetine (Generic)", price: "₹45-110" },
+                    { name: "Cymbalta", price: "₹60-140" },
+                    { name: "Duzela", price: "₹50-120" },
+                    { name: "Duvanta", price: "₹55-130" }
+                ]
+            },
+            {
+                brand: "Mirtazapine",
+                generic: "Mirtazapine",
+                category: "mental-health",
+                usage: "Treats depression, improves sleep and appetite",
+                priceRange: "₹60-150 per strip",
+                alternatives: [
+                    { name: "Mirtazapine (Generic)", price: "₹25-65" },
+                    { name: "Mirtaz", price: "₹30-75" },
+                    { name: "Remeron", price: "₹40-90" }
+                ]
+            },
+            {
+                brand: "Bupropion",
+                generic: "Bupropion",
+                category: "mental-health",
+                usage: "Treats depression, aids smoking cessation",
+                priceRange: "₹100-250 per strip",
+                alternatives: [
+                    { name: "Bupropion (Generic)", price: "₹45-110" },
+                    { name: "Wellbutrin", price: "₹60-140" },
+                    { name: "Bupron", price: "₹50-120" },
+                    { name: "Zyban", price: "₹55-130" }
+                ]
+            },
+            {
+                brand: "Aripiprazole",
+                generic: "Aripiprazole",
+                category: "mental-health",
+                usage: "Treats schizophrenia, bipolar disorder, depression add-on",
+                priceRange: "₹100-250 per strip",
+                alternatives: [
+                    { name: "Aripiprazole (Generic)", price: "₹45-110" },
+                    { name: "Abilify", price: "₹60-140" },
+                    { name: "Arzu", price: "₹50-120" },
+                    { name: "Aripra", price: "₹55-130" }
+                ]
+            },
+            // ===== NEW MEDICINES - More Fever & Pain =====
+            {
+                brand: "Naprosyn",
+                generic: "Naproxen",
+                category: "fever-pain",
+                usage: "Treats pain, inflammation, arthritis, menstrual cramps",
+                priceRange: "₹40-100 per strip",
+                alternatives: [
+                    { name: "Naproxen (Generic)", price: "₹18-42" },
+                    { name: "Naprosyn", price: "₹22-50" },
+                    { name: "Naxdom", price: "₹20-48" },
+                    { name: "Xenobid", price: "₹25-55" }
+                ]
+            },
+            {
+                brand: "Thiocolchicoside",
+                generic: "Thiocolchicoside",
+                category: "fever-pain",
+                usage: "Muscle relaxant for back pain, neck pain, sprain",
+                priceRange: "₹60-150 per strip",
+                alternatives: [
+                    { name: "Thiocolchicoside (Generic)", price: "₹25-65" },
+                    { name: "Myoril", price: "₹35-80" },
+                    { name: "Myonit", price: "₹30-70" },
+                    { name: "Thiospas", price: "₹28-68" }
+                ]
+            },
+            {
+                brand: "Tizanidine",
+                generic: "Tizanidine",
+                category: "fever-pain",
+                usage: "Muscle relaxant for spasms, back pain, neck pain",
+                priceRange: "₹40-100 per strip",
+                alternatives: [
+                    { name: "Tizanidine (Generic)", price: "₹18-42" },
+                    { name: "Sirdalud", price: "₹22-50" },
+                    { name: "Tizan", price: "₹20-48" },
+                    { name: "Tizanil", price: "₹25-55" }
+                ]
+            },
+            {
+                brand: "Chlorzoxazone",
+                generic: "Chlorzoxazone + Paracetamol",
+                category: "fever-pain",
+                usage: "Muscle relaxant with pain relief for body aches",
+                priceRange: "₹30-80 per strip",
+                alternatives: [
+                    { name: "Chlorzoxazone (Generic)", price: "₹12-32" },
+                    { name: "Myospaz", price: "₹15-38" },
+                    { name: "Proxyvon MR", price: "₹18-40" }
+                ]
+            },
+            // ===== NEW MEDICINES - More Antibiotics =====
+            {
+                brand: "Oflox",
+                generic: "Ofloxacin",
+                category: "antibiotics",
+                usage: "Treats bacterial infections, UTI, respiratory infections",
+                priceRange: "₹40-100 per strip",
+                alternatives: [
+                    { name: "Ofloxacin (Generic)", price: "₹18-42" },
+                    { name: "Oflox", price: "₹22-50" },
+                    { name: "Zanocin", price: "₹25-55" },
+                    { name: "Oflin", price: "₹20-48" }
+                ]
+            },
+            {
+                brand: "Norflox",
+                generic: "Norfloxacin",
+                category: "antibiotics",
+                usage: "Treats UTI, diarrhea, bacterial infections",
+                priceRange: "₹30-80 per strip",
+                alternatives: [
+                    { name: "Norfloxacin (Generic)", price: "₹12-30" },
+                    { name: "Norflox", price: "₹15-35" },
+                    { name: "Norbactin", price: "₹18-40" },
+                    { name: "Uroflox", price: "₹14-32" }
+                ]
+            },
+            {
+                brand: "Tinidazole",
+                generic: "Tinidazole",
+                category: "antibiotics",
+                usage: "Treats amoebic infections, giardia, bacterial vaginosis",
+                priceRange: "₹15-40 per strip",
+                alternatives: [
+                    { name: "Tinidazole (Generic)", price: "₹8-18" },
+                    { name: "Tiniba", price: "₹10-22" },
+                    { name: "Fasigyn", price: "₹12-25" }
+                ]
+            },
+            {
+                brand: "Secnidazole",
+                generic: "Secnidazole",
+                category: "antibiotics",
+                usage: "Single-dose treatment for amoebic and bacterial infections",
+                priceRange: "₹20-50 per strip",
+                alternatives: [
+                    { name: "Secnidazole (Generic)", price: "₹10-22" },
+                    { name: "Secnil", price: "₹12-25" },
+                    { name: "Flagentyl", price: "₹15-30" }
+                ]
+            },
+            // ===== NEW MEDICINES - More Acidity & GI =====
+            {
+                brand: "Sucralfate",
+                generic: "Sucralfate",
+                category: "acidity",
+                usage: "Treats and prevents stomach ulcers, forms protective coating",
+                priceRange: "₹50-120 per bottle",
+                alternatives: [
+                    { name: "Sucralfate (Generic)", price: "₹22-50" },
+                    { name: "Sucrafil", price: "₹28-60" },
+                    { name: "Carafate", price: "₹30-65" }
+                ]
+            },
+            {
+                brand: "ORS",
+                generic: "Oral Rehydration Salts",
+                category: "acidity",
+                usage: "Prevents dehydration from diarrhea, vomiting",
+                priceRange: "₹10-30 per sachet",
+                alternatives: [
+                    { name: "ORS (Generic)", price: "₹5-10" },
+                    { name: "Electral", price: "₹8-15" },
+                    { name: "Enerzal", price: "₹10-20" },
+                    { name: "Walyte", price: "₹7-12" }
+                ]
+            },
+            // ===== NEW MEDICINES - More Cold & Cough =====
+            {
+                brand: "Levocetrizine",
+                generic: "Levocetirizine",
+                category: "cold-cough",
+                usage: "Treats allergies, hay fever, itching - improved cetirizine",
+                priceRange: "₹30-80 per strip",
+                alternatives: [
+                    { name: "Levocetirizine (Generic)", price: "₹12-28" },
+                    { name: "Xyzal", price: "₹18-40" },
+                    { name: "Levocet", price: "₹15-32" },
+                    { name: "Vozet", price: "₹14-30" }
+                ]
+            },
+            {
+                brand: "Dextromethorphan",
+                generic: "Dextromethorphan",
+                category: "cold-cough",
+                usage: "Suppresses dry cough",
+                priceRange: "₹30-80 per bottle",
+                alternatives: [
+                    { name: "DM Syrup (Generic)", price: "₹12-30" },
+                    { name: "Zedex", price: "₹18-40" },
+                    { name: "Coscopin", price: "₹15-35" }
+                ]
+            },
+            {
+                brand: "Ambroxol",
+                generic: "Ambroxol",
+                category: "cold-cough",
+                usage: "Loosens mucus in wet cough, bronchitis",
+                priceRange: "₹30-70 per bottle",
+                alternatives: [
+                    { name: "Ambroxol (Generic)", price: "₹12-28" },
+                    { name: "Ambrodil", price: "₹15-35" },
+                    { name: "Mucolite", price: "₹18-38" },
+                    { name: "Ambril", price: "₹14-30" }
+                ]
+            },
+            // ===== NEW MEDICINES - More Vitamins & Supplements =====
+            {
+                brand: "Calcitriol",
+                generic: "Calcitriol (Active Vitamin D)",
+                category: "vitamins",
+                usage: "Treats severe vitamin D deficiency, renal bone disease",
+                priceRange: "₹80-200 per strip",
+                alternatives: [
+                    { name: "Calcitriol (Generic)", price: "₹35-85" },
+                    { name: "Rocaltrol", price: "₹45-100" },
+                    { name: "Calciol", price: "₹40-95" },
+                    { name: "Trical", price: "₹38-90" }
+                ]
+            },
+            {
+                brand: "Uprise D3",
+                generic: "Cholecalciferol (Vitamin D3)",
+                category: "vitamins",
+                usage: "Treats vitamin D deficiency, strengthens bones",
+                priceRange: "₹100-250 per sachet/strip",
+                nppaPrice: "₹8.82 per 60000 IU sachet",
+                nppaNote: "60000 IU sachet: ₹8.82",
+                alternatives: [
+                    { name: "Vitamin D3 (Generic)", price: "₹40-100" },
+                    { name: "Uprise D3", price: "₹55-120" },
+                    { name: "D-Rise", price: "₹50-110" },
+                    { name: "Arachitol", price: "₹45-105" }
+                ]
+            },
+            {
+                brand: "Omega-3",
+                generic: "Fish Oil / Omega-3 Fatty Acids",
+                category: "vitamins",
+                usage: "Supports heart health, reduces triglycerides",
+                priceRange: "₹200-500 per bottle",
+                alternatives: [
+                    { name: "Omega-3 (Generic)", price: "₹80-200" },
+                    { name: "Mega 3", price: "₹100-250" },
+                    { name: "Seven Seas", price: "₹120-280" },
+                    { name: "MaxEPA", price: "₹110-260" }
+                ]
+            },
+            {
+                brand: "CoQ10",
+                generic: "Coenzyme Q10",
+                category: "vitamins",
+                usage: "Antioxidant, supports heart health, boosts energy",
+                priceRange: "₹300-700 per bottle",
+                alternatives: [
+                    { name: "CoQ10 (Generic)", price: "₹150-350" },
+                    { name: "Coenzyme Q10", price: "₹180-400" },
+                    { name: "Q-10", price: "₹160-380" }
+                ]
+            },
+            {
+                brand: "Biotin",
+                generic: "Biotin (Vitamin B7)",
+                category: "vitamins",
+                usage: "Promotes hair growth, strengthens nails, healthy skin",
+                priceRange: "₹150-400 per bottle",
+                alternatives: [
+                    { name: "Biotin (Generic)", price: "₹60-160" },
+                    { name: "Hairfol", price: "₹80-200" },
+                    { name: "Keraglo", price: "₹90-220" },
+                    { name: "Follihair", price: "₹85-210" }
+                ]
+            }
+        ];
+
+        // DOM Elements
+        const searchInput = document.getElementById('searchInput');
+        const resultsSection = document.getElementById('resultsSection');
+        const categoryButtons = document.querySelectorAll('.category-btn');
+
+        // State
+        let currentCategory = 'all';
+        let searchTerm = '';
+
+        // Initialize
+        displayMedicines(medicines);
+
+        // Event Listeners
+        searchInput.addEventListener('input', (e) => {
+            searchTerm = e.target.value.toLowerCase();
+            filterAndDisplay();
+        });
+
+        categoryButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                categoryButtons.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentCategory = e.target.dataset.category;
+                filterAndDisplay();
+            });
+        });
+
+        // Functions
+        function filterAndDisplay() {
+            let filtered = medicines;
+
+            // Filter by category
+            if (currentCategory !== 'all') {
+                filtered = filtered.filter(med => med.category === currentCategory);
+            }
+
+            // Filter by search
+            if (searchTerm) {
+                filtered = filtered.filter(med => 
+                    med.brand.toLowerCase().includes(searchTerm) ||
+                    med.generic.toLowerCase().includes(searchTerm) ||
+                    med.usage.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            displayMedicines(filtered);
+        }
+
+        function displayMedicines(medicineList) {
+            if (medicineList.length === 0) {
+                resultsSection.innerHTML = '<div class="no-results">No medicines found. Try a different search or category.</div>';
+                return;
+            }
+
+            resultsSection.innerHTML = medicineList.map(med => `
+                <div class="medicine-card">
+                    <div class="category-tag">${getCategoryName(med.category)}</div>
+                    <div class="brand-name">${med.brand}</div>
+                    <div class="generic-name">Generic: ${med.generic}</div>
+                    <div class="usage">${med.usage}</div>
+                    <div class="price-range">Typical Cost: ${med.priceRange}</div>
+                    
+                    ${med.nppaPrice ? `
+                    <div class="nppa-price-box">
+                        <div class="nppa-label">🏛️ NPPA Govt. Ceiling Price</div>
+                        <div class="nppa-price">${med.nppaPrice}</div>
+                        <div class="nppa-verified">✓ ${med.nppaNote || 'Official Maximum Retail Price'}</div>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="alternatives-section">
+                        <div class="alternatives-title">💰 Cheaper Alternatives:</div>
+                        ${med.alternatives.map(alt => `
+                            <div class="alternative-item">
+                                <span class="alt-name">${alt.name}</span>
+                                <span class="alt-price">${alt.price}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="pharmacy-links">
+                        <a href="https://www.1mg.com/search/all?name=${encodeURIComponent(med.generic)}" target="_blank" class="pharmacy-btn btn-1mg">
+                            Check Price on 1mg
+                        </a>
+                        <a href="https://www.apollopharmacy.in/search-medicines/${encodeURIComponent(med.generic.toLowerCase().replace(/ /g, '-'))}" target="_blank" class="pharmacy-btn btn-netmeds">
+                            Check Price on Apollo
+                        </a>
+                        <a href="https://pharmeasy.in/search/all?name=${encodeURIComponent(med.generic)}" target="_blank" class="pharmacy-btn btn-pharmeasy">
+                            Check Price on PharmEasy
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getCategoryName(category) {
+            const names = {
+                'fever-pain': 'Fever & Pain',
+                'antibiotics': 'Antibiotics',
+                'diabetes': 'Diabetes',
+                'bp': 'Blood Pressure',
+                'acidity': 'Acidity',
+                'cold-cough': 'Cold & Cough',
+                'mental-health': 'Mental Health',
+                'skin': 'Skin Care',
+                'eye-ear': 'Eye & Ear',
+                'womens-health': "Women's Health",
+                'heart': 'Heart',
+                'vitamins': 'Vitamins'
+            };
+            return names[category] || category;
+        }
+    </script>
+</body>
+</html>
