@@ -775,9 +775,26 @@
             background: #ffc107;
             color: #333;
         }
-        #requestMedBtn:hover {
-            background: #667eea !important;
-            color: white !important;
+        .request-med-btn {
+            padding: 10px 18px;
+            border: 2px solid #667eea;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .request-med-btn:hover {
+            background: #5568d3;
+            border-color: #5568d3;
+            transform: translateY(-2px);
+        }
+        body.dark-mode .request-med-btn {
+            background: #8b9cf7;
+            border-color: #8b9cf7;
+            color: #1a1a2e;
         }
 
         /* Request Medicine Modal */
@@ -1142,16 +1159,17 @@
         /* Prescription Scanner */
         .scan-btn {
             padding: 10px 18px;
-            border: 2px solid #ff6b6b;
-            background: transparent;
-            color: #ff6b6b;
+            border: 2px solid #764ba2;
+            background: #764ba2;
+            color: white;
             border-radius: 20px;
             cursor: pointer;
             font-size: 14px;
             font-weight: 600;
             transition: all 0.3s;
         }
-        .scan-btn:hover { background: #ff6b6b; color: white; }
+        .scan-btn:hover { background: #5e3a82; border-color: #5e3a82; transform: translateY(-2px); }
+        body.dark-mode .scan-btn { background: #a76bcf; border-color: #a76bcf; color: #1a1a2e; }
         .scan-results {
             margin-top: 15px;
             padding: 15px;
@@ -1321,7 +1339,7 @@
                 <option value="category">Category</option>
             </select>
             <button class="bookmark-filter-btn" id="bookmarkFilterBtn" title="Show Saved Medicines">⭐ Saved</button>
-            <button class="bookmark-filter-btn" id="requestMedBtn" title="Request a Medicine" style="border-color:#667eea;color:#667eea;">➕ Request Medicine</button>
+            <button class="request-med-btn" id="requestMedBtn" title="Request a Medicine">📝 Request Medicine</button>
             <button class="scan-btn" id="scanBtn" title="Scan Prescription">📷 Scan Prescription</button>
             <span class="results-count" id="resultsCount">Showing 235 medicines</span>
         </div>
@@ -4841,36 +4859,67 @@
         const voiceBtn = document.getElementById('voiceBtn');
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'en-IN';
-            recognition.interimResults = false;
+            let recognition = null;
+            let isListening = false;
+
+            function startListening() {
+                try {
+                    recognition = new SpeechRecognition();
+                    recognition.lang = 'en-IN';
+                    recognition.interimResults = false;
+                    recognition.continuous = false;
+                    recognition.maxAlternatives = 1;
+
+                    recognition.onstart = () => {
+                        isListening = true;
+                        voiceBtn.classList.add('listening');
+                        voiceBtn.textContent = '🔴';
+                        searchInput.placeholder = '🎙️ Listening... speak now';
+                    };
+
+                    recognition.onresult = (e) => {
+                        const transcript = e.results[0][0].transcript;
+                        searchInput.value = transcript;
+                        searchTerm = transcript.toLowerCase();
+                        filterAndDisplay();
+                        searchInput.placeholder = 'Search 235+ medicines by brand name, generic name, or usage...';
+                    };
+
+                    recognition.onend = () => {
+                        isListening = false;
+                        voiceBtn.classList.remove('listening');
+                        voiceBtn.textContent = '🎤';
+                        searchInput.placeholder = 'Search 235+ medicines by brand name, generic name, or usage...';
+                    };
+
+                    recognition.onerror = (e) => {
+                        isListening = false;
+                        voiceBtn.classList.remove('listening');
+                        voiceBtn.textContent = '🎤';
+                        searchInput.placeholder = 'Search 235+ medicines by brand name, generic name, or usage...';
+                        if (e.error === 'not-allowed') {
+                            alert('Microphone access denied. Please allow microphone permission in your browser settings.');
+                        } else if (e.error === 'no-speech') {
+                            alert('No speech detected. Please try again and speak clearly.');
+                        }
+                    };
+
+                    recognition.start();
+                } catch (err) {
+                    alert('Voice search error. Please try again.');
+                    isListening = false;
+                    voiceBtn.classList.remove('listening');
+                    voiceBtn.textContent = '🎤';
+                }
+            }
 
             voiceBtn.addEventListener('click', () => {
-                if (voiceBtn.classList.contains('listening')) {
+                if (isListening && recognition) {
                     recognition.stop();
                     return;
                 }
-                voiceBtn.classList.add('listening');
-                voiceBtn.textContent = '🔴';
-                recognition.start();
+                startListening();
             });
-
-            recognition.onresult = (e) => {
-                const transcript = e.results[0][0].transcript;
-                searchInput.value = transcript;
-                searchTerm = transcript.toLowerCase();
-                filterAndDisplay();
-            };
-
-            recognition.onend = () => {
-                voiceBtn.classList.remove('listening');
-                voiceBtn.textContent = '🎤';
-            };
-
-            recognition.onerror = () => {
-                voiceBtn.classList.remove('listening');
-                voiceBtn.textContent = '🎤';
-            };
         } else {
             voiceBtn.style.display = 'none';
         }
