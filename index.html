@@ -1470,6 +1470,7 @@
         let feedbackData = JSON.parse(localStorage.getItem('medFeedback') || '{}');
         let showOnlyBookmarks = false;
         let compareList = [];
+        let reminders = JSON.parse(localStorage.getItem('medReminders') || '[]');
 
         // ===== Medicine Database =====
         const medicines = [
@@ -5115,7 +5116,6 @@
         }
 
         // ===== MEDICINE REMINDER =====
-        let reminders = JSON.parse(localStorage.getItem('medReminders') || '[]');
         let currentReminderMed = '';
 
         function openReminder(brand) {
