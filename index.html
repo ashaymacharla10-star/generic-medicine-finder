@@ -1408,10 +1408,11 @@
         <div class="modal-content">
             <button class="modal-close" onclick="document.getElementById('qrModal').classList.remove('show')">&times;</button>
             <div class="qr-modal-body">
-                <h2>📱 Scan QR Code</h2>
+                <h2>📱 Share via QR Code</h2>
                 <div class="qr-med-name" id="qrMedName"></div>
                 <div id="qrCodeContainer"></div>
-                <p style="color:#888;font-size:12px;margin-top:10px;">Scan to open this medicine on generic-med.org</p>
+                <p style="color:#667eea;font-size:14px;margin-top:12px;font-weight:600;">📷 Scan with phone camera to find this medicine</p>
+                <p style="color:#888;font-size:12px;margin-top:5px;">Opens generic-med.org and automatically shows this medicine with generic alternatives</p>
             </div>
         </div>
     </div>
@@ -5344,13 +5345,27 @@
             }
         }
 
-        // ===== HANDLE URL SEARCH PARAMS =====
+        // ===== HANDLE URL SEARCH PARAMS (from QR code scan) =====
         const urlParams = new URLSearchParams(window.location.search);
         const urlSearch = urlParams.get('search');
         if (urlSearch) {
-            searchInput.value = urlSearch;
-            searchTerm = urlSearch.toLowerCase();
+            searchInput.value = decodeURIComponent(urlSearch);
+            searchTerm = decodeURIComponent(urlSearch).toLowerCase();
             filterAndDisplay();
+            // Scroll to results after a brief delay (for mobile users from QR)
+            setTimeout(() => {
+                const resultsEl = document.getElementById('resultsSection');
+                if (resultsEl) {
+                    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                // Highlight the search bar to show what was searched
+                searchInput.style.borderColor = '#667eea';
+                searchInput.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.3)';
+                setTimeout(() => {
+                    searchInput.style.borderColor = '#ddd';
+                    searchInput.style.boxShadow = 'none';
+                }, 3000);
+            }, 500);
         }
 
         // ===== FAMILY MEDICINE CABINET =====
