@@ -212,6 +212,9 @@
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             transition: all 0.3s;
+            overflow: hidden;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .medicine-card:hover {
@@ -300,6 +303,10 @@
             text-align: center;
             font-weight: bold;
             color: #27ae60;
+            font-size: 13px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.4;
         }
 
         .nppa-price-box {
@@ -495,6 +502,9 @@
             font-size: 13px;
             opacity: 0.9;
             margin-top: 3px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.4;
         }
 
         /* Dark Mode Toggle */
@@ -5020,7 +5030,7 @@
             {
                 brand: "Nexito 10",
                 generic: "Escitalopram 10mg",
-                category: "mental",
+                category: "mental-health",
                 usage: "Depression, anxiety disorder, panic attacks",
                 priceRange: "₹80-160 per strip (10 tablets)",
                 alternatives: [
@@ -5033,7 +5043,7 @@
             {
                 brand: "Lonazep 0.5",
                 generic: "Clonazepam 0.5mg",
-                category: "mental",
+                category: "mental-health",
                 usage: "Anxiety, seizures, panic disorder, insomnia",
                 priceRange: "₹30-60 per strip (15 tablets)",
                 alternatives: [
@@ -5045,7 +5055,7 @@
             {
                 brand: "Gabantin 300",
                 generic: "Gabapentin 300mg",
-                category: "mental",
+                category: "mental-health",
                 usage: "Nerve pain, epilepsy, neuropathy, restless legs",
                 priceRange: "₹80-160 per strip (10 capsules)",
                 alternatives: [
@@ -5057,7 +5067,7 @@
             {
                 brand: "Oleanz 5",
                 generic: "Olanzapine 5mg",
-                category: "mental",
+                category: "mental-health",
                 usage: "Schizophrenia, bipolar disorder, psychosis",
                 priceRange: "₹60-120 per strip (10 tablets)",
                 alternatives: [
@@ -5069,7 +5079,7 @@
             {
                 brand: "Pregabalin 75",
                 generic: "Pregabalin 75mg",
-                category: "mental",
+                category: "mental-health",
                 usage: "Nerve pain, fibromyalgia, epilepsy, anxiety",
                 priceRange: "₹80-160 per strip (10 capsules)",
                 alternatives: [
@@ -5145,7 +5155,7 @@
             {
                 brand: "Folvite 5mg",
                 generic: "Folic Acid 5mg",
-                category: "women",
+                category: "womens-health",
                 usage: "Pregnancy supplement, prevents birth defects, anemia",
                 priceRange: "₹15-30 per strip (30 tablets)",
                 alternatives: [
@@ -5157,7 +5167,7 @@
             {
                 brand: "Susten 200",
                 generic: "Progesterone 200mg",
-                category: "women",
+                category: "womens-health",
                 usage: "Pregnancy support, luteal support, prevents miscarriage",
                 priceRange: "₹250-450 per strip (10 capsules)",
                 alternatives: [
@@ -5169,7 +5179,7 @@
             {
                 brand: "Duphaston",
                 generic: "Dydrogesterone 10mg",
-                category: "women",
+                category: "womens-health",
                 usage: "Irregular periods, endometriosis, pregnancy support",
                 priceRange: "₹300-550 per strip (10 tablets)",
                 alternatives: [
@@ -5570,8 +5580,9 @@
                 const isBookmarked = bookmarks.includes(med.brand);
                 const isCompared = compareList.includes(med.brand);
                 const fb = feedbackData[med.brand] || { up: 0, down: 0, voted: '' };
+                const brandEncoded = encodeURIComponent(med.brand);
                 const genericEncoded = encodeURIComponent(med.generic);
-                const genericDash = encodeURIComponent(med.generic.toLowerCase().replace(/ /g, '-'));
+                const brandDash = med.brand.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
                 return `
                 <div class="medicine-card">
@@ -5613,19 +5624,19 @@
                     </div>
 
                     <div class="card-actions">
-                        <a href="https://www.1mg.com/search/all?name=${genericEncoded}" target="_blank" class="pharmacy-btn btn-1mg">1mg</a>
-                        <a href="https://www.apollopharmacy.in/search-medicines/${genericDash}" target="_blank" class="pharmacy-btn btn-netmeds">Apollo</a>
-                        <a href="https://pharmeasy.in/search/all?name=${genericEncoded}" target="_blank" class="pharmacy-btn btn-pharmeasy">PharmEasy</a>
+                        <a href="https://www.1mg.com/search/all?name=${brandEncoded}" target="_blank" class="pharmacy-btn btn-1mg">1mg</a>
+                        <a href="https://www.apollopharmacy.in/search-medicines/${brandDash}" target="_blank" class="pharmacy-btn btn-netmeds">Apollo</a>
+                        <a href="https://pharmeasy.in/search/all?name=${brandEncoded}" target="_blank" class="pharmacy-btn btn-pharmeasy">PharmEasy</a>
                         <a href="https://wa.me/?text=${whatsappText}" target="_blank" class="btn-whatsapp">📱 Share</a>
                         <button class="btn-qr" onclick="showQR('${med.brand.replace(/'/g, "\\'")}', '${med.generic.replace(/'/g, "\\'")}')">QR</button>
                     </div>
                     <button class="more-pharmacies-toggle" onclick="this.nextElementSibling.classList.toggle('show'); this.textContent = this.nextElementSibling.classList.contains('show') ? '▲ Less pharmacies' : '▼ More pharmacies (6+)';">▼ More pharmacies (6+)</button>
                     <div class="extra-pharmacies">
-                        <a href="https://www.netmeds.com/catalogsearch/result?q=${genericEncoded}" target="_blank" class="pharmacy-btn btn-netmeds-actual">Netmeds</a>
-                        <a href="https://www.medplusmart.com/searchProduct.do?searchTerm=${genericEncoded}" target="_blank" class="pharmacy-btn btn-medplus">MedPlus</a>
-                        <a href="https://www.flipkart.com/search?q=${genericEncoded}+medicine" target="_blank" class="pharmacy-btn btn-flipkart">Flipkart Health+</a>
-                        <a href="https://www.amazon.in/s?k=${genericEncoded}+medicine" target="_blank" class="pharmacy-btn btn-amazon">Amazon Pharmacy</a>
-                        <a href="https://www.truemeds.in/search?q=${genericEncoded}" target="_blank" class="pharmacy-btn btn-truemeds">Truemeds</a>
+                        <a href="https://www.netmeds.com/catalogsearch/result?q=${brandEncoded}" target="_blank" class="pharmacy-btn btn-netmeds-actual">Netmeds</a>
+                        <a href="https://www.medplusmart.com/searchProduct?searchKey=${brandEncoded}" target="_blank" class="pharmacy-btn btn-medplus">MedPlus</a>
+                        <a href="https://www.flipkart.com/search?q=${brandEncoded}+medicine" target="_blank" class="pharmacy-btn btn-flipkart">Flipkart Health+</a>
+                        <a href="https://www.amazon.in/s?k=${brandEncoded}&i=hpc" target="_blank" class="pharmacy-btn btn-amazon">Amazon Pharmacy</a>
+                        <a href="https://www.truemeds.in/search?search=${brandEncoded}" target="_blank" class="pharmacy-btn btn-truemeds">Truemeds</a>
                         <a href="https://janaushadhisugam.co.in/ProductList" target="_blank" class="pharmacy-btn btn-janaushadhi">Jan Aushadhi</a>
                     </div>
 
