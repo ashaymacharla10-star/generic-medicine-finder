@@ -1463,12 +1463,19 @@
         </div>
     </div>
 
+    <!-- SEO: Browse all medicines page link (helps Google crawl individual pages) -->
+    <div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:20px;margin-bottom:20px;text-align:center;">
+        <p style="color:white;margin-bottom:10px;font-size:14px;opacity:0.9;">Looking for a specific medicine? Browse our complete list:</p>
+        <a href="medicines/index.html" style="background:white;color:#667eea;padding:10px 24px;border-radius:20px;text-decoration:none;font-weight:bold;font-size:14px;">📋 Browse All 300+ Medicines →</a>
+    </div>
+
     <footer>
         <p>⚠️ <strong>Disclaimer:</strong> Always consult your doctor before switching medicines. This website is for informational purposes only.</p>
         <p style="margin-top: 10px; font-size: 0.9em;">Generic Medicine Finder - Helping people save money on healthcare</p>
         <p style="margin-top: 15px; font-size: 0.9em;">
             <a href="about.html">About Us</a> |
             <a href="privacy.html">Privacy Policy</a> |
+            <a href="medicines/index.html">All Medicines</a> |
             <a href="mailto:contact@generic-med.org">Contact</a>
         </p>
         <p style="margin-top: 10px; font-size: 0.8em; opacity: 0.7;">&copy; 2025 generic-med.org | All rights reserved</p>
@@ -5582,7 +5589,7 @@
                 const fb = feedbackData[med.brand] || { up: 0, down: 0, voted: '' };
                 const brandEncoded = encodeURIComponent(med.brand);
                 const genericEncoded = encodeURIComponent(med.generic);
-                const brandDash = med.brand.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                const searchQuery = encodeURIComponent(med.brand + ' ' + med.generic.split(' ')[0]);
 
                 return `
                 <div class="medicine-card">
@@ -5617,7 +5624,7 @@
                         <div class="alternatives-title">💰 Cheaper Alternatives:</div>
                         ${med.alternatives.map(alt => `
                             <div class="alternative-item">
-                                <a href="https://www.1mg.com/search/all?name=${encodeURIComponent(alt.name.replace(/\s*\d+\s*$/, '').replace(/\s*\(.*?\)\s*$/, ''))}" target="_blank" class="alt-name alt-link">${alt.name}</a>
+                                <a href="https://www.1mg.com/search/all?name=${encodeURIComponent(alt.name.replace(/\s*\(.*?\)\s*$/, ''))}" target="_blank" class="alt-name alt-link">${alt.name}</a>
                                 <span class="alt-price">${alt.price}</span>
                             </div>
                         `).join('')}
@@ -5625,7 +5632,7 @@
 
                     <div class="card-actions">
                         <a href="https://www.1mg.com/search/all?name=${brandEncoded}" target="_blank" class="pharmacy-btn btn-1mg">1mg</a>
-                        <a href="https://www.apollopharmacy.in/search-medicines/${brandDash}" target="_blank" class="pharmacy-btn btn-netmeds">Apollo</a>
+                        <a href="https://www.apollopharmacy.in/search-medicines?search_query=${brandEncoded}" target="_blank" class="pharmacy-btn btn-netmeds">Apollo</a>
                         <a href="https://pharmeasy.in/search/all?name=${brandEncoded}" target="_blank" class="pharmacy-btn btn-pharmeasy">PharmEasy</a>
                         <a href="https://wa.me/?text=${whatsappText}" target="_blank" class="btn-whatsapp">📱 Share</a>
                         <button class="btn-qr" onclick="showQR('${med.brand.replace(/'/g, "\\'")}', '${med.generic.replace(/'/g, "\\'")}')">QR</button>
@@ -5634,8 +5641,8 @@
                     <div class="extra-pharmacies">
                         <a href="https://www.netmeds.com/catalogsearch/result?q=${brandEncoded}" target="_blank" class="pharmacy-btn btn-netmeds-actual">Netmeds</a>
                         <a href="https://www.medplusmart.com/searchProduct?searchKey=${brandEncoded}" target="_blank" class="pharmacy-btn btn-medplus">MedPlus</a>
-                        <a href="https://www.flipkart.com/search?q=${brandEncoded}+medicine" target="_blank" class="pharmacy-btn btn-flipkart">Flipkart Health+</a>
-                        <a href="https://www.amazon.in/s?k=${brandEncoded}&i=hpc" target="_blank" class="pharmacy-btn btn-amazon">Amazon Pharmacy</a>
+                        <a href="https://www.flipkart.com/search?q=${searchQuery}+tablet" target="_blank" class="pharmacy-btn btn-flipkart">Flipkart Health+</a>
+                        <a href="https://www.amazon.in/s?k=${searchQuery}&i=hpc" target="_blank" class="pharmacy-btn btn-amazon">Amazon Pharmacy</a>
                         <a href="https://www.truemeds.in/search?search=${brandEncoded}" target="_blank" class="pharmacy-btn btn-truemeds">Truemeds</a>
                         <a href="https://janaushadhisugam.co.in/ProductList" target="_blank" class="pharmacy-btn btn-janaushadhi">Jan Aushadhi</a>
                     </div>
