@@ -77,9 +77,12 @@ function safeEncode(str) {
 
 // ─── Generate one page per medicine ──────────────────────────────────────────
 const generatedSlugs = [];
+const slugCount = {};
 
 medicines.forEach((med, idx) => {
-    const medSlug = slug(med.brand);
+    const baseSlug = slug(med.brand);
+    slugCount[baseSlug] = (slugCount[baseSlug] || 0) + 1;
+    const medSlug = slugCount[baseSlug] > 1 ? `${baseSlug}-${slugCount[baseSlug]}` : baseSlug;
     generatedSlugs.push(medSlug);
 
     const genericFirstWord = (med.generic || '').split(' ')[0];
