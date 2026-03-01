@@ -1318,7 +1318,7 @@
     <div class="container">
         <header>
             <h1>💊 Generic Medicine Finder</h1>
-            <p class="tagline">Save up to 90% on medicines - Search 300+ medicines for cheaper generic alternatives instantly</p>
+            <p class="tagline">Save up to 90% on medicines - Search 676+ medicines for cheaper generic alternatives instantly</p>
         </header>
 
         <!-- Overpay Counter -->
@@ -1334,7 +1334,7 @@
 
         <div class="search-section">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search 300+ medicines by brand name, generic name, or usage...">
+                <input type="text" id="searchInput" placeholder="Search 676+ medicines by brand name, generic name, or usage...">
                 <button class="voice-btn" id="voiceBtn" title="Voice Search">🎤</button>
             </div>
 
@@ -1352,6 +1352,14 @@
                 <button class="category-btn" data-category="womens-health">Women's Health</button>
                 <button class="category-btn" data-category="heart">Heart</button>
                 <button class="category-btn" data-category="vitamins">Vitamins</button>
+                <button class="category-btn" data-category="cholesterol">Cholesterol</button>
+                <button class="category-btn" data-category="thyroid">Thyroid</button>
+                <button class="category-btn" data-category="asthma">Asthma</button>
+                <button class="category-btn" data-category="allergy">Allergy</button>
+                <button class="category-btn" data-category="neuro">Neuro</button>
+                <button class="category-btn" data-category="kidney">Kidney</button>
+                <button class="category-btn" data-category="liver">Liver</button>
+                <button class="category-btn" data-category="pain">Pain</button>
             </div>
         </div>
 
@@ -1367,7 +1375,7 @@
             <button class="bookmark-filter-btn" id="bookmarkFilterBtn" title="Show Saved Medicines">⭐ Saved</button>
             <button class="request-med-btn" id="requestMedBtn" title="Request a Medicine">📝 Request Medicine</button>
             <button class="scan-btn" id="scanBtn" title="Scan Prescription">📷 Scan Prescription</button>
-            <span class="results-count" id="resultsCount">Showing 308 medicines</span>
+            <span class="results-count" id="resultsCount">Showing 676 medicines</span>
         </div>
 
         <div class="results-section" id="resultsSection">
@@ -1466,7 +1474,7 @@
     <!-- SEO: Browse all medicines page link (helps Google crawl individual pages) -->
     <div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:20px;margin-bottom:20px;text-align:center;">
         <p style="color:white;margin-bottom:10px;font-size:14px;opacity:0.9;">Looking for a specific medicine? Browse our complete list:</p>
-        <a href="medicines/index.html" style="background:white;color:#667eea;padding:10px 24px;border-radius:20px;text-decoration:none;font-weight:bold;font-size:14px;">📋 Browse All 300+ Medicines →</a>
+        <a href="medicines/index.html" style="background:white;color:#667eea;padding:10px 24px;border-radius:20px;text-decoration:none;font-weight:bold;font-size:14px;">📋 Browse All 676+ Medicines →</a>
         &nbsp;&nbsp;
         <a href="blog/" style="background:rgba(255,255,255,0.2);color:white;padding:10px 24px;border-radius:20px;text-decoration:none;font-weight:bold;font-size:14px;border:2px solid rgba(255,255,255,0.6);">📚 Read Our Blog →</a>
     </div>
@@ -10201,21 +10209,21 @@
                         searchInput.value = transcript;
                         searchTerm = transcript.toLowerCase();
                         filterAndDisplay();
-                        searchInput.placeholder = 'Search 300+ medicines by brand name, generic name, or usage...';
+                        searchInput.placeholder = 'Search 676+ medicines by brand name, generic name, or usage...';
                     };
 
                     recognition.onend = () => {
                         isListening = false;
                         voiceBtn.classList.remove('listening');
                         voiceBtn.textContent = '🎤';
-                        searchInput.placeholder = 'Search 300+ medicines by brand name, generic name, or usage...';
+                        searchInput.placeholder = 'Search 676+ medicines by brand name, generic name, or usage...';
                     };
 
                     recognition.onerror = (e) => {
                         isListening = false;
                         voiceBtn.classList.remove('listening');
                         voiceBtn.textContent = '🎤';
-                        searchInput.placeholder = 'Search 300+ medicines by brand name, generic name, or usage...';
+                        searchInput.placeholder = 'Search 676+ medicines by brand name, generic name, or usage...';
                         if (e.error === 'not-allowed') {
                             alert('Microphone access denied. Please allow microphone permission in your browser settings.');
                         } else if (e.error === 'no-speech') {
@@ -10423,10 +10431,10 @@
         // ===== HINDI LANGUAGE TOGGLE =====
         const hindiDict = {
             'Generic Medicine Finder': 'जेनेरिक दवा खोजक',
-            'Save up to 90% on medicines - Search 300+ medicines for cheaper generic alternatives instantly': 'दवाओं पर 90% तक बचाएं - 300+ दवाओं के सस्ते जेनेरिक विकल्प तुरंत खोजें',
+            'Save up to 90% on medicines - Search 676+ medicines for cheaper generic alternatives instantly': 'दवाओं पर 90% तक बचाएं - 300+ दवाओं के सस्ते जेनेरिक विकल्प तुरंत खोजें',
             'Did you know?': 'क्या आप जानते हैं?',
             'The same medicine with the same composition costs 10-20 times more when branded! Find cheaper alternatives below.': 'एक ही रचना वाली दवा ब्रांडेड होने पर 10-20 गुना अधिक महंगी होती है! नीचे सस्ते विकल्प खोजें।',
-            'Search 300+ medicines by brand name, generic name, or usage...': '300+ दवाओं को ब्रांड नाम, जेनेरिक नाम, या उपयोग से खोजें...',
+            'Search 676+ medicines by brand name, generic name, or usage...': '300+ दवाओं को ब्रांड नाम, जेनेरिक नाम, या उपयोग से खोजें...',
             'All Medicines': 'सभी दवाइयां',
             'Fever & Pain': 'बुखार और दर्द',
             'Antibiotics': 'एंटीबायोटिक्स',
@@ -10473,10 +10481,10 @@
             h1.textContent = isHindi ? '💊 ' + hindiDict['Generic Medicine Finder'] : '💊 Generic Medicine Finder';
 
             const tagline = document.querySelector('.tagline');
-            tagline.textContent = isHindi ? hindiDict['Save up to 90% on medicines - Search 300+ medicines for cheaper generic alternatives instantly'] : 'Save up to 90% on medicines - Search 300+ medicines for cheaper generic alternatives instantly';
+            tagline.textContent = isHindi ? hindiDict['Save up to 90% on medicines - Search 676+ medicines for cheaper generic alternatives instantly'] : 'Save up to 90% on medicines - Search 676+ medicines for cheaper generic alternatives instantly';
 
             // Translate search placeholder
-            searchInput.placeholder = isHindi ? hindiDict['Search 300+ medicines by brand name, generic name, or usage...'] : 'Search 300+ medicines by brand name, generic name, or usage...';
+            searchInput.placeholder = isHindi ? hindiDict['Search 676+ medicines by brand name, generic name, or usage...'] : 'Search 676+ medicines by brand name, generic name, or usage...';
 
             // Translate info banner
             const banner = document.querySelector('.info-banner');
