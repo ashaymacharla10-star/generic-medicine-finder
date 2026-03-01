@@ -10169,7 +10169,7 @@
                 ['Savings %', m => { const s = calculateSavings(m); return s.percent > 0 ? `${s.percent}%` : 'N/A'; }],
                 ['NPPA Price', m => m.nppaPrice || 'Not available'],
                 ['Alternatives Count', m => m.alternatives.length.toString()]
-    
+            ];
 
             rows.forEach(([label, fn]) => {
                 html += `<tr><td><strong>${label}</strong></td>`;
